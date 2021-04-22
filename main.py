@@ -5,6 +5,8 @@ import os
 from random import randint
 from keep_alive import keep_alive
 import asyncio
+from bCompiler.bCompiler import compile
+from MPU6Transpiler.MPU6Transpiler import MPU6Transpile
 
 client = discord.Client()
 
