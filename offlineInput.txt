@@ -1,2 +1,2 @@
-$B
-auto x = 5;
+$URCL
+IMM R1, 5
