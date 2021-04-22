@@ -14,8 +14,8 @@ def emulate(raw: str) -> str:
     # setup
     # 1 make global list for registers + ram + SP
     # 2 resolve define macros
-    # 3 replace relatives with literals
-    # 4 replace labels with literals
+    # 3 replace labels with literals
+    # 4 replace relatives with literals
     # 5 put code in ram, then set M0 offset
     # 6 PC = 0, R0 = 0, branch = False, ect.
     
@@ -51,10 +51,11 @@ def emulate(raw: str) -> str:
     MINREG = findMINREGHeader()
     
     # 3 find MINRAM, MINSTACK delete it
-    MINRAM = findMINRAMMINSTACKRUNHeaders()
+    MINRAM = findMINRAMHeader()
+    MINSTACK = findMINSTACKHeader()
     
-    # 4 find IMPORT, return error
-    findIMPORTHeader()
+    # 4 find IMPORT, RUN RAM, return error
+    findIMPORTRUNHeader()
     
     # setup
     # 1 make global list for registers + ram + SP
@@ -66,6 +67,13 @@ def emulate(raw: str) -> str:
     global SP; SP = 2 ** BITS
     
     # 2 resolve define macros
+    resolveDefineMacros()
+    
+    # 3 replace labels with literals
+    resolveLabels() ######################################
+    
+    # 4 replace relatives with literals
+    resolveRelatives() ######################################
     
     
     return "\n".join(code)
@@ -87,20 +95,45 @@ def findMINREGHeader() -> int:
             return int(code[i][6:], 0)
     return 8
 
-def findMINRAMMINSTACKRUNHeaders() -> tuple:
+def findMINRAMHeader() -> int:
     MINRAM = 2 ** BITS
-    if MINRAM > 2 ** 16:
-        MINRAM = 2 ** 16
-    
     for i in range(len(code)):
-        if code[i].startswith(("MINRAM", "RUNRAM")):
+        if code[i].startswith("MINRAM"):
+            MINRAM = int(code[i][6:], 0)
             code.pop(i)
-        elif code[i] == "RUNROM":
-            raise Exception("FATAL - RUN ROM is not supported on this emulator")
-    
+            return MINRAM
     return MINRAM
 
-def findIMPORTHeader() -> None:
+def findMINSTACKHeader() -> int:
+    MINSTACK = 0
+    for i in range(len(code)):
+        if code[i].startswith("MINSTACK"):
+            MINSTACK = int(code[i][8:], 0)
+            code.pop(i)
+            return MINSTACK
+    return MINSTACK
+
+def findIMPORTRUNHeader() -> None:
     for i in code:
         if i.startswith("IMPORT"):
             raise Exception("FATAL - Libraries are not supported on this emulator")
+        elif i == "RUNROM":
+            raise Exception("FATAL - RUN ROM is not supported on this emulator")
+
+def resolveDefineMacros() -> None:
+    for i in range(len(code)):
+        if code[i].startswith("@define"):
+            macro = code[i][: code[i].index(",")]
+            definition = code[i][code[i].index(",") + 1: ]
+            code.pop(i)
+            code = [j.replace("@" + macro, definition) for j in code]
+            return resolveDefineMacros()
+
+def resolveLabels() -> None:
+    pass
+
+def resolveRelatives() -> None:
+    pass
+
+
+
