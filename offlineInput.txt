@@ -1,2 +1,11 @@
 $URCL
-MOV R0, R0
+BITS == 8
+MINREG 2
+MINRAM 0
+IMM R1, 0
+IMM R2, 1
+.whileHead0
+ADD R1, R1, R2
+ADD R2, R2, R1
+JMP .whileHead0
+HLT

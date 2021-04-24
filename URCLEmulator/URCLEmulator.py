@@ -90,6 +90,7 @@ def emulate(raw: str) -> str:
     # 1 make global list for registers + ram + SP
     global registers
     registers = [2 ** BITS - 1 for i in range(MINREG + 1)]
+    global uninitialisedReg
     uninitialisedReg = [True for i in registers]
     registers[0] = 0
     uninitialisedReg[0] = False
@@ -110,6 +111,7 @@ def emulate(raw: str) -> str:
     # 5 put code in ram, then set M0 offset
     putCodeInRAM()
     global M0; M0 = len(code)
+    global uninitialisedMem
     uninitialisedMem = [True if i < len(code) else False for i in range(len(memory))]
     
     # 6 put DW values into memory
@@ -187,6 +189,7 @@ def emulate(raw: str) -> str:
             "\n\nPC = " + str(PC) +
             "\nTotal number of cycles: " + str(totalCycles) + 
             "\nStack Pointer = " + str(correctValue(SP)) +
+            "\nTotal memory size = " + str(len(memory)) +
             "\n\nRegisters:\n" + 
             "\n".join(["R" + str(i) + ": " + str(j) for i, j in enumerate(registers)][1:]) +
             "\n\nMemory:\n" +
@@ -749,12 +752,15 @@ def write(location: str, value: int) -> None:
     if location.startswith("R"):
         num = int(location[1:])
         registers[num] = value
+        uninitialisedReg[num] = False
     elif location.startswith("M"):
         num = int(location[1:])
         memory[num + M0] = value
+        uninitialisedMem[num] = False
     elif location.isnumeric():
         num = int(location)
         memory[num] = value
+        uninitialisedMem[num] = False
     elif location == "PC":
         num = int(value)
         PC = num
