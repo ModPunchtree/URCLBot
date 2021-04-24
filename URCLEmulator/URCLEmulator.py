@@ -87,7 +87,13 @@ def emulate(raw: str) -> str:
     
     ################################################
     
-    # 1 make global list for registers + ram + SP
+    # 1 resolve define macros
+    resolveDefineMacros()
+    
+    # 2 replace labels with literals
+    resolveLabels()
+    
+    # 3 make global list for registers + ram + SP
     global registers
     registers = [2 ** BITS - 1 for i in range(MINREG + 1)]
     global uninitialisedReg
@@ -96,14 +102,7 @@ def emulate(raw: str) -> str:
     uninitialisedReg[0] = False
     global memory
     memory = [2 ** BITS - 1 for i in range(min(MINRAM + MINSTACK + len(code), 2 ** BITS))]
-    
     global SP; SP = len(memory)
-    
-    # 2 resolve define macros
-    resolveDefineMacros()
-    
-    # 3 replace labels with literals
-    resolveLabels()
     
     # 4 replace relatives with literals
     resolveRelatives()
@@ -209,7 +208,7 @@ def findBITSHeader() -> int:
             temp = code[i]
             code.pop(i)
             if temp.find("=") != -1:
-                return int(temp[temp.find("=") + 2:], 0)
+                return int(temp[len(temp) - temp[::-1].find("="):], 0)
             else:
                 return int(temp[4:], 0)
     return 8

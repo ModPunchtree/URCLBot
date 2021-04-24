@@ -1,9 +1,9 @@
 $URCL
+BITS >= 8
+MINREG 0
+MINRAM 0
+MINSTACK 0
 CAL .test
-NOP
-NOP
-NOP
-NOP
 HLT
 .test
 RET
