@@ -200,18 +200,20 @@ def emulate(raw: str) -> str:
 def findBITSHeader() -> int:
     for i in range(len(code)):
         if code[i].startswith("BITS"):
+            temp = code[i]
             code.pop(i)
-            if code[i].find("=") != -1:
-                return int(code[i][code[i].find("=") + 1:], 0)
+            if temp.find("=") != -1:
+                return int(temp[temp.find("=") + 1:], 0)
             else:
-                return int(code[i][4:], 0)
+                return int(temp[4:], 0)
     return 8
 
 def findMINREGHeader() -> int:
     for i in range(len(code)):
         if code[i].startswith("MINREG"):
+            temp = int(code[i][6:], 0)
             code.pop(i)
-            return int(code[i][6:], 0)
+            return temp
     return 8
 
 def findMINRAMHeader() -> int:
