@@ -181,6 +181,8 @@ def emulate(raw: str) -> str:
         # 12 if not branch -> PC += 1
         if not branch:
             PC += 1
+        else:
+            branch = False
         
         totalCycles += 1
     
@@ -443,7 +445,7 @@ def fetchOps(op: str, ops: tuple) -> tuple:
 def fetch(operand: str, op: str, absMem: bool = False) -> int:
     if op in ("POP", "RET"):
         temp = fetch(SP, "LOD", True)
-        SP -= 1
+        SP += 1
         return temp
     elif operand == "PC":
         return PC
@@ -467,6 +469,7 @@ def fetch(operand: str, op: str, absMem: bool = False) -> int:
         raise Exception("FATAL - Invalid fetch location: " + operand)
 
 def doOperation(op: str, fetchList: tuple) -> int:
+    global SP
     if op == "ADD":
         return fetchList[1] + fetchList[2]
     elif op == "RSH":
@@ -562,11 +565,15 @@ def doOperation(op: str, fetchList: tuple) -> int:
     elif op == "PSH":
         return fetchList[0]
     elif op == "POP":
-        return fetchList[0]
+        num = memory[SP]
+        SP += 1
+        return num
     elif op == "CAL":
         return fetchList[0]
     elif op == "RET":
-        return 0
+        num = memory[SP]
+        SP += 1
+        return num
     elif op == "HLT":
         return 0
     elif op == "MLT":
@@ -625,6 +632,7 @@ def correctValue(value: int) -> int:
     return value
 
 def writeResult(op: str, result: int, ops: tuple, fetchList: tuple) -> None:
+    global SP
     if op == "ADD":
         write(ops[0], result)
     elif op == "RSH":
@@ -706,11 +714,13 @@ def writeResult(op: str, result: int, ops: tuple, fetchList: tuple) -> None:
     elif op == "OUT":
         outputList.append(result)
     elif op == "PSH":
-        SP += 1
+        SP -= 1
         write(str(SP), result)
     elif op == "POP":
         write(ops[0], result)
     elif op == "CAL":
+        SP -= 1
+        write(str(SP), PC + 1)
         write("PC", result)
     elif op == "RET":
         write("PC", result)
