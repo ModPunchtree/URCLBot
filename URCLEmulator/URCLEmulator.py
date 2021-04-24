@@ -101,7 +101,7 @@ def emulate(raw: str) -> str:
     
     # 5 put code in ram, then set M0 offset
     putCodeInRAM()
-    M0 = len(code)
+    global M0; M0 = len(code)
     uninitialisedMem = [True if i < len(code) else False for i in range(len(memory))]
     
     # 6 put DW values into memory
@@ -115,7 +115,7 @@ def emulate(raw: str) -> str:
     cycleLimit = 1000
     totalCycles = 0
     global warnings; warnings = ()
-    outputList = []
+    global outputList; outputList = []
     
     ################################################
     
@@ -123,6 +123,7 @@ def emulate(raw: str) -> str:
     
     ################################################
     
+    global instruction
     while totalCycles < cycleLimit:
         instruction = memory[PC]
         
