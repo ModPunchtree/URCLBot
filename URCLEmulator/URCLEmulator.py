@@ -431,7 +431,7 @@ def fetchOps(op: str, ops: tuple) -> tuple:
     elif fetchOneTwo(op):
         return (fetch(ops[0], op), fetch(ops[1], op))
     elif fetchOne(op):
-        return (fetch(ops[0], op))
+        return (fetch(ops[0], op),)
     elif fetchNone(op):
         return ()
     else:
@@ -743,6 +743,9 @@ def writeResult(op: str, result: int, ops: tuple, fetchList: tuple) -> None:
         raise Exception("FATAL - Invalid operation: " + op)
 
 def write(location: str, value: int) -> None:
+    global PC
+    global branch
+    global SP
     if location.startswith("R"):
         num = int(location[1:])
         registers[num] = value
@@ -753,11 +756,12 @@ def write(location: str, value: int) -> None:
         num = int(location)
         memory[num] = value
     elif location == "PC":
-        num = int(location)
-        PC = value
+        num = int(value)
+        PC = num
+        branch = True
     elif location == "SP":
-        num = int(location)
-        SP = value
+        num = int(value)
+        SP = num
     else:
         raise Exception("FATAL - Invalid write location: " + location)
 
