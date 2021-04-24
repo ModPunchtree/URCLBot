@@ -71,11 +71,12 @@ async def on_message(message):
         return
 
     elif message.content.startswith("$URCL"):
+        await message.channel.send("Emulating...")
         text = message.content[5: ]
         try:
             text = emulate(text)
         except Exception as x:
-            await message.channel.send("ERROR: \n" + x)
+            await message.channel.send("ERROR: \n" + str(x))
             
         try:
             await message.channel.send("```\n" +
