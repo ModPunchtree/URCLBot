@@ -152,11 +152,11 @@ def emulate(raw: str) -> str:
         
         # 5 check if fetched operands are uninitialised -> append warning
         if uninitialisedFetch(op, ops, opTypes, uninitialisedReg, uninitialisedMem):
-            warnings.append("This instruction: " + instruction + "\nFetches an uninitialised register or memory location")
+            warnings += ("This instruction: " + instruction + "\nFetches an uninitialised register or memory location",)
         
         # 6 check if write location is not valid -> return error or append warning
         if writingToR0(ops):
-            warnings.append("This instruction: " + instruction + "\nHas R0 as the first operand, it is generally bad practice to have R0 here")
+            warnings += ("This instruction: " + instruction + "\nHas R0 as the first operand, it is generally bad practice to have R0 here", )
 
         if op == "HLT":
             break
@@ -453,7 +453,7 @@ def fetch(operand: str, op: str, absMem: bool = False) -> int:
         num = int(operand[1:])
         return memory[num + M0]
     elif operand.startswith("%"):
-        warnings.append("IN instruction tried to fetch value from port: " + operand + "\nThis emulator does not support ports so it returned 0 instead.")
+        warnings += ("IN instruction tried to fetch value from port: " + operand + "\nThis emulator does not support ports so it returned 0 instead.",)
         return 0
     elif operand.isnumeric() and absMem:
         num = int(operand)

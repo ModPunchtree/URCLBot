@@ -1,2 +1,2 @@
 $URCL
-JMP +0
+MOV R0, R0
