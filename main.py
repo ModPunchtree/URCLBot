@@ -29,10 +29,6 @@ async def on_message(message):
 
     elif str(message.channel) != "flagless-urcl-bot":
         return
-    
-    elif message.content.startswith("$URCL"):
-        await message.channel.send("Emulating...")
-        return
 
     elif message.content.startswith("$B"):
         await message.channel.send("Compiling...")
