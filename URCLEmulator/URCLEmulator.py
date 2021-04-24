@@ -1,5 +1,5 @@
 
-from URCLEmulator.constants import numberOfOps, urcl, validOpTypes
+from URCLEmulator.constants import fetchNone, fetchOne, fetchOneTwo, fetchOneTwoThree, fetchTwo, fetchTwoThree, numberOfOps, urcl, validOpTypes
 
 def emulate(raw: str) -> str:
     
@@ -44,7 +44,10 @@ def emulate(raw: str) -> str:
     
     # 1 remove spaces
     global code
-    code = raw[5:]
+    if raw.startswith("$URCL"):
+        code = raw[5:]
+    else:
+        code = raw
     code = code.replace(" ", "")
     code = code.replace("$", "R")
     code = code.replace("#", "M")
@@ -52,10 +55,13 @@ def emulate(raw: str) -> str:
     
     # 2 remove line comments
     code = [code[i][: code[i].find("//")] if code[i].find("//") != -1 else code[i] for i in range(len(code))]
+    code = list(filter(None, code))
+    if code[-1] != "HLT":
+        code.append("HLT")
     
     # headers
     # 1 find word length header, else assume 8 bits
-    BITS = findBITSHeader()
+    global BITS; BITS = findBITSHeader()
 
     # 2 find MINREG, else calculate it
     MINREG = findMINREGHeader()
@@ -74,13 +80,15 @@ def emulate(raw: str) -> str:
     ################################################
     
     # 1 make global list for registers + ram + SP
+    global registers
     registers = [2 ** BITS - 1 for i in range(MINREG + 1)]
     uninitialisedReg = [True for i in registers]
     registers[0] = 0
     uninitialisedReg[0] = False
-    memory = [2 ** BITS - 1 for i in range(MINRAM)]
+    global memory
+    memory = [2 ** BITS - 1 for i in range(min(MINRAM + MINSTACK + len(code), 2 ** BITS))]
     
-    global SP; SP = 2 ** BITS
+    global SP; SP = len(memory)
     
     # 2 resolve define macros
     resolveDefineMacros()
@@ -94,7 +102,7 @@ def emulate(raw: str) -> str:
     # 5 put code in ram, then set M0 offset
     putCodeInRAM()
     M0 = len(code)
-    uninitialisedMem = [True if i < len(code) else False for i in memory]
+    uninitialisedMem = [True if i < len(code) else False for i in range(len(memory))]
     
     # 6 put DW values into memory
     for i, j in enumerate(code):
@@ -102,11 +110,12 @@ def emulate(raw: str) -> str:
             memory[i] = int(j[2:], 0)
     
     # 7 PC = 0, R0 = 0, branch = False, ect.
-    PC = 0
-    branch = False
+    global PC; PC = 0
+    global branch; branch = False
     cycleLimit = 1000
     totalCycles = 0
-    warnings = ()
+    global warnings; warnings = ()
+    outputList = []
     
     ################################################
     
@@ -133,22 +142,53 @@ def emulate(raw: str) -> str:
             raise Exception("FATAL - Invalid operand types in instruction: " + instruction)
         
         # 5 check if fetched operands are uninitialised -> append warning
-        if uninitialisedFetch():
+        if uninitialisedFetch(op, ops, opTypes, uninitialisedReg, uninitialisedMem):
             warnings.append("This instruction: " + instruction + "\nFetches an uninitialised register or memory location")
         
         # 6 check if write location is not valid -> return error or append warning
         if writingToR0(ops):
             warnings.append("This instruction: " + instruction + "\nHas R0 as the first operand, it is generally bad practice to have R0 here")
 
+        if op == "HLT":
+            break
+
         # 7 fetch values from reg/ram
+        fetchList = fetchOps(op, ops)
+        
         # 8 do operation
+        result = doOperation(op, fetchList)
+        
         # 9 truncate result
+        result = correctValue(result)
+        
         # 10 write result
-        doWork(op, ops, opTypes)
+        writeResult(op, result, ops, fetchList)
+        
+        # 11 R0 = 0
+        registers[0] = 0
+        
+        # 12 if not branch -> PC += 1
+        if not branch:
+            PC += 1
         
         totalCycles += 1
     
-    return "\n".join(code)
+    # return warnings + all registers/initialised memory + outputList
+    #["M" + str(i) + ": " + str(j) if not(uninitialisedMem[i]) and type(j) != str else "" for i, j in enumerate(memory)]
+    temp = []
+    for i, j in enumerate(memory):
+        if uninitialisedMem[i] and type(j) != str:
+            temp.append("M" + str(i) + ": " + str(j))
+        
+        
+    return ("\n".join(["WARNING - " + i for i in warnings]) + 
+            "\n\nPC = " + str(PC) +
+            "\nTotal number of cycles: " + str(totalCycles) + 
+            "\nStack Pointer = " + str(correctValue(SP)) +
+            "\n\nRegisters:\n" + 
+            "\n".join(["R" + str(i) + ": " + str(j) for i, j in enumerate(registers)][1:]) +
+            "\n\nMemory:\n" +
+            "\n".join(filter(None, ["M" + str(i) + ": " + str(j) if uninitialisedMem[i] and type(j) != str else "" for i, j in enumerate(memory)])))
 
 ################################################
 
@@ -199,6 +239,7 @@ def findIMPORTRUNHeader() -> None:
             raise Exception("FATAL - RUN ROM is not supported on this emulator")
 
 def resolveDefineMacros() -> None:
+    global code
     for i in range(len(code)):
         if code[i].startswith("@define"):
             macro = code[i][: code[i].index(",")]
@@ -208,6 +249,7 @@ def resolveDefineMacros() -> None:
             return resolveDefineMacros()
 
 def resolveLabels() -> None:
+    global code
     for i in range(len(code)):
         if code[i].startswith("."):
             code = [j.replace(code[i], str(i)) for j in code]
@@ -229,18 +271,18 @@ def putCodeInRAM() -> None:
         memory[i] = code[i]
 
 def fetchInstruction(instruction: str) -> None:
-    if instruction[5: ] in urcl():
+    if instruction[: 5] in urcl():
         temp = 5
-    elif instruction[4: ] in urcl():
+    elif instruction[: 4] in urcl():
         temp = 4
-    elif instruction[3: ] in urcl():
+    elif instruction[: 3] in urcl():
         temp = 3
-    elif instruction[2: ] in urcl():
+    elif instruction[: 2] in urcl():
         temp = 2
     else:
         raise Exception("FATAL - Unrecognised instruction: " + instruction)
 
-    return instruction[temp: ]
+    return instruction[: temp]
 
 def getOps(text: str) -> tuple:
     answer = ()
@@ -248,31 +290,32 @@ def getOps(text: str) -> tuple:
     temp = ""
     while char < len(text):
         if text[char] == ",":
-            answer += (temp)
+            answer += (temp,)
             temp = ""    
         else:
             temp += text[char]
         char += 1
     if temp:
-        answer += (temp)
+        answer += (temp,)
     return answer
 
 def getOpsType(ops: tuple) -> tuple:
     answer = ()
     for i in ops:
         if i.startswith("R"):
-            answer += ("REG")
+            answer += ("REG",)
         elif i.startswith("M"):
-            answer += ("MEM")
+            answer += ("MEM",)
         elif i[0].isnumeric():
-            answer += ("IMM")
+            answer += ("IMM",)
         elif i.startswith("%"):
-            answer += ("PORT")
+            answer += ("PORT",)
         else:
-            answer += (i)
+            answer += (i,)
+    return answer
 
 def invalidNumberOfOps(op: str, ops: tuple) -> bool:
-    if len(ops) == numberOfOps()[numberOfOps().index(op)]:
+    if len(ops) == numberOfOps()[urcl().index(op)]:
         return False
     return True
 
@@ -285,55 +328,82 @@ def invalidOpTypes(op: str, opTypes: tuple) -> bool:
 def uninitialisedFetch(op: str, ops: tuple, opTypes: tuple, uninitialisedReg: list, uninitialisedMemory: list) -> bool:
     temp = False
     if (len(ops) == 1) and (op != "POP"):
-        num = int(ops[0][1:])
+        if ops[0].isnumeric():
+            num = int(ops[0])
+        else:
+            num = int(ops[0][1:])
         if opTypes[0] == "REG":
             temp = uninitialisedReg[num]
         elif opTypes[0] == "MEM":
             temp = uninitialisedMemory[num]
 
     elif op in ("BOD", "BEV", "BRZ", "BZR", "BNZ", "BZN", "BRN", "BRP"):
-        num = int(ops[0][1:])
+        if ops[0].isnumeric():
+            num = int(ops[0])
+        else:
+            num = int(ops[0][1:])
         if opTypes[0] == "REG":
             temp = uninitialisedReg[num]
         elif opTypes[0] == "MEM":
             temp = uninitialisedMemory[num]
-        num = int(ops[1][1:])
+        if ops[1].isnumeric():
+            num = int(ops[1])
+        else:
+            num = int(ops[1][1:])
         if opTypes[1] == "REG":
             temp = uninitialisedReg[num] or temp
         elif opTypes[1] == "MEM":
             temp = uninitialisedMemory[num] or temp
 
     elif (len(ops) == 2) and (op != "IN"):
-        num = int(ops[1][1:])
+        if ops[1].isnumeric():
+            num = int(ops[1])
+        else:
+            num = int(ops[1][1:])
         if opTypes[1] == "REG":
             temp = uninitialisedReg[num]
         elif opTypes[1] == "MEM":
             temp = uninitialisedMemory[num]
     
     elif op in ("BGR", "BRL", "BRG", "BRE", "BNE", "BLE"):
-        num = int(ops[0][1:])
+        if ops[0].isnumeric():
+            num = int(ops[0])
+        else:
+            num = int(ops[0][1:])
         if opTypes[0] == "REG":
             temp = uninitialisedReg[num]
         elif opTypes[0] == "MEM":
             temp = uninitialisedMemory[num]
-        num = int(ops[1][1:])
+        if ops[1].isnumeric():
+            num = int(ops[1])
+        else:
+            num = int(ops[1][1:])
         if opTypes[1] == "REG":
             temp = uninitialisedReg[num] or temp
         elif opTypes[1] == "MEM":
             temp = uninitialisedMemory[num] or temp
-        num = int(ops[2][1:])
+        if ops[2].isnumeric():
+            num = int(ops[2])
+        else:
+            num = int(ops[2][1:])
         if opTypes[2] == "REG":
             temp = uninitialisedReg[num] or temp
         elif opTypes[2] == "MEM":
             temp = uninitialisedMemory[num] or temp
     
     elif len(ops) == 3:
-        num = int(ops[1][1:])
+        if ops[1].isnumeric():
+            num = int(ops[1])
+        else:
+            num = int(ops[1][1:])
         if opTypes[1] == "REG":
             temp = uninitialisedReg[num]
         elif opTypes[1] == "MEM":
             temp = uninitialisedMemory[num]
-        num = int(ops[2][1:])
+        if ops[2].isnumeric():
+            num = int(ops[2])
+        else:
+            num = int(ops[2][1:])
         if opTypes[2] == "REG":
             temp = uninitialisedReg[num] or temp
         elif opTypes[2] == "MEM":
@@ -347,13 +417,344 @@ def writingToR0(ops: tuple) -> bool:
             return True
     return False
 
-def doWork(op: str, ops: tuple, opTypes: tuple):
-    
-    # 7 fetch values from reg/ram
-    pass
-    
-    # 8 do operation
-    # 9 truncate result
-    # 10 write result
+def fetchOps(op: str, ops: tuple) -> tuple:
+    if fetchTwoThree(op):
+        return ("", fetch(ops[1], op), fetch(ops[2], op))
+    elif fetchOneTwoThree(op):
+        return (fetch(ops[0], op), fetch(ops[1], op), fetch(ops[2], op))
+    elif fetchTwo(op):
+        return ("", fetch(ops[1], op))
+    elif fetchOneTwo(op):
+        return (fetch(ops[0], op), fetch(ops[1], op))
+    elif fetchOne(op):
+        return (fetch(ops[0], op))
+    elif fetchNone(op):
+        return ()
+    else:
+        raise Exception("FATAL - Failed to fetch operands for: " + instruction)
+
+def fetch(operand: str, op: str, absMem: bool = False) -> int:
+    if op in ("POP", "RET"):
+        temp = fetch(SP, "LOD", True)
+        SP -= 1
+        return temp
+    elif operand == "PC":
+        return PC
+    elif operand == "SP":
+        return SP
+    elif operand.startswith("R"):
+        num = int(operand[1:])
+        return registers[num]
+    elif operand.startswith("M"):
+        num = int(operand[1:])
+        return memory[num + M0]
+    elif operand.startswith("%"):
+        warnings.append("IN instruction tried to fetch value from port: " + operand + "\nThis emulator does not support ports so it returned 0 instead.")
+        return 0
+    elif operand.isnumeric() and absMem:
+        num = int(operand)
+        return memory[num]
+    elif operand.isnumeric():
+        return int(operand)
+    else:
+        raise Exception("FATAL - Invalid fetch location: " + operand)
+
+def doOperation(op: str, fetchList: tuple) -> int:
+    if op == "ADD":
+        return fetchList[1] + fetchList[2]
+    elif op == "RSH":
+        return fetchList[1] // 2
+    elif op == "LOD":
+        return fetchList[1]
+    elif op == "STR":
+        return fetchList[1]
+    elif op == "JMP":
+        return fetchList[0]
+    elif op == "BGE":
+        if fetchList[1] >= fetchList[2]:
+            return 1
+        return 0
+    elif op == "NOR":
+        return (2 ** BITS - 1) - (fetchList[1] | fetchList[2])
+    elif op == "SUB":
+        return fetchList[1] - fetchList[2]
+    elif op == "MOV":
+        return fetchList[1]
+    elif op == "NOP":
+        return 0
+    elif op == "IMM":
+        return fetchList[1]
+    elif op == "LSH":
+        return fetchList[1] * 2
+    elif op == "INC":
+        return fetchList[1] + 1
+    elif op == "DEC":
+        return fetchList[1] - 1
+    elif op == "NEG":
+        return -fetchList[1]
+    elif op == "AND":
+        return fetchList[1] & fetchList[2]
+    elif op == "OR":
+        return fetchList[1] | fetchList[2]
+    elif op == "NOT":
+        return (2 ** BITS - 1) - fetchList[1]
+    elif op == "XNOR":
+        return (2 ** BITS - 1) - (fetchList[1] ^ fetchList[2])
+    elif op == "XOR":
+        return fetchList[1] ^ fetchList[2]
+    elif op == "NAND":
+        return (2 ** BITS - 1) - (fetchList[1] & fetchList[2])
+    elif op == "BRL":
+        if fetchList[1] < fetchList[2]:
+            return 1
+        return 0
+    elif op == "BRG":
+        if fetchList[1] > fetchList[2]:
+            return 1
+        return 0
+    elif op == "BRE":
+        if fetchList[1] == fetchList[2]:
+            return 1
+        return 0
+    elif op == "BNE":
+        if fetchList[1] != fetchList[2]:
+            return 1
+        return 0
+    elif op == "BOD":
+        if (fetchList[1] % 2) == 1:
+            return 1
+        return 0
+    elif op == "BEV":
+        if (fetchList[1] % 2) == 0:
+            return 1
+        return 0
+    elif op == "BLE":
+        if fetchList[1] <= fetchList[2]:
+            return 1
+        return 0
+    elif op in ("BRZ", "BZR"):
+        if fetchList[1] == 0:
+            return 1
+        return 0
+    elif op in ("BNZ", "BZN"):
+        if fetchList[1] != 0:
+            return 1
+        return 0
+    elif op == "BRN":
+        if fetchList[1] >= 2 ** (BITS - 1):
+            return 1
+        return 0
+    elif op == "BRP":
+        if fetchList[1] < 2 ** (BITS - 1):
+            return 1
+        return 0
+    elif op == "IN":
+        return fetchList[1]
+    elif op == "OUT":
+        return fetchList[1]
+    elif op == "PSH":
+        return fetchList[0]
+    elif op == "POP":
+        return fetchList[0]
+    elif op == "CAL":
+        return fetchList[0]
+    elif op == "RET":
+        return 0
+    elif op == "HLT":
+        return 0
+    elif op == "MLT":
+        return fetchList[1] * fetchList[2]
+    elif op == "DIV":
+        return fetchList[1] // fetchList[2]
+    elif op == "MOD":
+        return fetchList[1] % fetchList[2]
+    elif op == "BSR":
+        return fetchList[1] // 2 ** fetchList[2]
+    elif op == "BSL":
+        return fetchList[1] * 2 ** fetchList[2]
+    elif op == "SRS":
+        if fetchList[1] >= 2 ** (BITS - 1):
+            return (fetchList[1] // 2) + 2 ** (BITS - 1)
+        return fetchList[1] // 2
+    elif op == "BSS":
+        temp = fetchList[1]
+        for i in range(fetchList[2]):
+            if temp >= 2 ** (BITS - 1):
+                temp = (temp // 2) + 2 ** (BITS - 1)
+            temp //= 2
+        return temp
+    elif op == "SETE":
+        if fetchList[1] == fetchList[2]:
+            return 1
+        return 0
+    elif op == "SETNE":
+        if fetchList[1] != fetchList[2]:
+            return 1
+        return 0
+    elif op == "SETG":
+        if fetchList[1] > fetchList[2]:
+            return 1
+        return 0
+    elif op == "SETL":
+        if fetchList[1] < fetchList[2]:
+            return 1
+        return 0
+    elif op == "SETGE":
+        if fetchList[1] >= fetchList[2]:
+            return 1
+        return 0
+    elif op == "SETLE":
+        if fetchList[1] <= fetchList[2]:
+            return 1
+        return 0
+    else:
+        raise Exception("FATAL - Invalid operation: " + op)
+
+def correctValue(value: int) -> int:
+    while value >= 2 ** BITS:
+        value -= 2 ** BITS
+    while value < 0:
+        value += 2 ** BITS
+    return value
+
+def writeResult(op: str, result: int, ops: tuple, fetchList: tuple) -> None:
+    if op == "ADD":
+        write(ops[0], result)
+    elif op == "RSH":
+        write(ops[0], result)
+    elif op == "LOD":
+        write(ops[0], result)
+    elif op == "STR":
+        write(ops[0], result)
+    elif op == "JMP":
+        write("PC", result)
+    elif op == "BGE":
+        if result == 1:
+            write("PC", fetchList[0])
+    elif op == "NOR":
+        write(ops[0], result)
+    elif op == "SUB":
+        write(ops[0], result)
+    elif op == "MOV":
+        write(ops[0], result)
+    elif op == "NOP":
+        pass
+    elif op == "IMM":
+        write(ops[0], result)
+    elif op == "LSH":
+        write(ops[0], result)
+    elif op == "INC":
+        write(ops[0], result)
+    elif op == "DEC":
+        write(ops[0], result)
+    elif op == "NEG":
+        write(ops[0], result)
+    elif op == "AND":
+        write(ops[0], result)
+    elif op == "OR":
+        write(ops[0], result)
+    elif op == "NOT":
+        write(ops[0], result)
+    elif op == "XNOR":
+        write(ops[0], result)
+    elif op == "XOR":
+        write(ops[0], result)
+    elif op == "NAND":
+        write(ops[0], result)
+    elif op == "BRL":
+        if result == 1:
+            write("PC", fetchList[0])
+    elif op == "BRG":
+        if result == 1:
+            write("PC", fetchList[0])
+    elif op == "BRE":
+        if result == 1:
+            write("PC", fetchList[0])
+    elif op == "BNE":
+        if result == 1:
+            write("PC", fetchList[0])
+    elif op == "BOD":
+        if result == 1:
+            write("PC", fetchList[0])
+    elif op == "BEV":
+        if result == 1:
+            write("PC", fetchList[0])
+    elif op == "BLE":
+        if result == 1:
+            write("PC", fetchList[0])
+    elif op in ("BRZ", "BZR"):
+        if result == 1:
+            write("PC", fetchList[0])
+    elif op in ("BNZ", "BZN"):
+        if result == 1:
+            write("PC", fetchList[0])
+    elif op == "BRN":
+        if result == 1:
+            write("PC", fetchList[0])
+    elif op == "BRP":
+        if result == 1:
+            write("PC", fetchList[0])
+    elif op == "IN":
+        write(ops[0], result)
+    elif op == "OUT":
+        outputList.append(result)
+    elif op == "PSH":
+        SP += 1
+        write(str(SP), result)
+    elif op == "POP":
+        write(ops[0], result)
+    elif op == "CAL":
+        write("PC", result)
+    elif op == "RET":
+        write("PC", result)
+    elif op == "HLT":
+        pass
+    elif op == "MLT":
+        write(ops[0], result)
+    elif op == "DIV":
+        write(ops[0], result)
+    elif op == "MOD":
+        write(ops[0], result)
+    elif op == "BSR":
+        write(ops[0], result)
+    elif op == "BSL":
+        write(ops[0], result)
+    elif op == "SRS":
+        write(ops[0], result)
+    elif op == "BSS":
+        write(ops[0], result)
+    elif op == "SETE":
+        write(ops[0], result)
+    elif op == "SETNE":
+        write(ops[0], result)
+    elif op == "SETG":
+        write(ops[0], result)
+    elif op == "SETL":
+        write(ops[0], result)
+    elif op == "SETGE":
+        write(ops[0], result)
+    elif op == "SETLE":
+        write(ops[0], result)
+    else:
+        raise Exception("FATAL - Invalid operation: " + op)
+
+def write(location: str, value: int) -> None:
+    if location.startswith("R"):
+        num = int(location[1:])
+        registers[num] = value
+    elif location.startswith("M"):
+        num = int(location[1:])
+        memory[num + M0] = value
+    elif location.isnumeric():
+        num = int(location)
+        memory[num] = value
+    elif location == "PC":
+        num = int(location)
+        PC = value
+    elif location == "SP":
+        num = int(location)
+        SP = value
+    else:
+        raise Exception("FATAL - Invalid write location: " + location)
 
 

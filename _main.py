@@ -7,4 +7,4 @@ from MPU6Transpiler.MPU6Transpiler import MPU6Transpile
 f = open("offlineInput.txt", "r+")
 code = f.read()
 
-print(emulate(code[5:]))
+print(emulate(code[5: ]))

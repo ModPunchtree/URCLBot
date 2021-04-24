@@ -26,6 +26,7 @@ def validOpTypes() -> tuple:
     twenty = ("PORT", "REG")
     twentyone = ("PORT", "IMM")
     twentytwo = ("IMM", "IMM")
+    twentythree = ()
     
     ADD = (one, two, seventeen, three)
     RSH = (four, five)
@@ -36,8 +37,8 @@ def validOpTypes() -> tuple:
     NOR = (one, two, seventeen)
     SUB = (one, two, seventeen, three)
     MOV = (four, five)
-    NOP = ()
-    IMM = (five)
+    NOP = (twentythree,)
+    IMM = (five,)
     LSH = (four, five)
     INC = (four, five)
     DEC = (four, five)
@@ -64,10 +65,10 @@ def validOpTypes() -> tuple:
     IN = (nineteen)
     OUT = (twenty, twentyone)
     PSH = (eleven, ten)
-    POP = (eleven)
+    POP = (eleven,)
     CAL = (eleven, ten)
-    RET = ()
-    HLT = ()
+    RET = (twentythree,)
+    HLT = (twentythree,)
     MLT = (one, two, seventeen)
     DIV = (one, two, seventeen)
     MOD = (one, two, seventeen)
@@ -84,4 +85,32 @@ def validOpTypes() -> tuple:
 
     return (ADD, RSH, LOD, STR, JMP, BGE, NOR, SUB, MOV, NOP, IMM, LSH, INC, DEC, NEG, AND, OR, NOT, XNOR, XOR, NAND, BRL, BRG, BRE, BNE, BOD, BEV, BLE, BRZ, BZR, BNZ, BZN, BRN, BRP, IN, OUT, PSH, POP, CAL, RET, HLT, MLT, DIV, MOD, BSR, BSL, SRS, BSS, SETE, SETNE, SETG, SETL, SETGE, SETLE)
 
-	
+def fetchTwoThree(op: str) -> bool:
+    if op in ("ADD", "NOR", "SUB", "AND", "OR", "NOT", "XNOR", "XOR", "NAND", "MLT", "DIV", "MOD", "BSR", "BSL", "BSS", "SETE", "SETNE", "SETG", "SETL", "SETGE", "SETLE"):
+        return True
+    return False
+
+def fetchOneTwoThree(op: str) -> bool:
+    if op in ("BGE", "BRL", "BRG", "BRE", "BNE", "BLE"):
+        return True
+    return False
+
+def fetchTwo(op: str) -> bool:
+    if op in ("RSH", "LOD", "STR", "MOV", "IMM", "LSH", "INC", "DEC", "NEG", "NOT", "IN", "OUT", "SRS"):
+        return True
+    return False
+
+def fetchOneTwo(op: str) -> bool:
+    if op in ("BOD", "BEV", "BRZ", "BZR", "BNZ", "BZN", "BRN", "BRP"):
+        return True
+    return False
+
+def fetchOne(op: str) -> bool:
+    if op in ("JMP", "PSH", "CAL"):
+        return True
+    return False
+
+def fetchNone(op: str) -> bool:
+    if op in ("NOP", "POP", "RET", "HLT"):
+        return True
+    return False
