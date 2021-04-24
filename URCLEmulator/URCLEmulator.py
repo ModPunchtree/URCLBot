@@ -62,8 +62,8 @@ def emulate(raw: str) -> str:
     # headers
     # 1 find word length header, else assume 8 bits
     global BITS; BITS = findBITSHeader()
-    if BITS > 64:
-        raise Exception("FATAL - BITS cannot be more than 64")
+    if BITS > 16:
+        raise Exception("FATAL - BITS cannot be more than 16")
 
     # 2 find MINREG, else calculate it
     MINREG = findMINREGHeader()
