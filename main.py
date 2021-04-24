@@ -1,5 +1,6 @@
 # main file for repl.it 
 
+from URCLEmulator.URCLEmulator import emulate
 import discord
 import os
 from random import randint
@@ -58,7 +59,7 @@ async def on_message(message):
     
     elif message.content.startswith("$MPU6"):
         await message.channel.send("Translating...")
-        text = message.content[5:]
+        text = message.content[5: ]
         text = text.split("\n")
         text = MPU6Transpile(text)
         try:
@@ -72,7 +73,26 @@ async def on_message(message):
             await message.channel.send("Output too big! ;)")
             await message.channel.send(file=discord.File("output.txt"))
         return
-        
+
+    elif message.content.startswith("$URCL"):
+        text = message.content[5: ]
+        try:
+            text = emulate(text)
+        except Exception as x:
+            await message.channel.send("ERROR: \n" + x)
+            
+        try:
+            await message.channel.send("```\n" +
+                                   text +
+                                   "```")
+        except Exception:
+            f = open("output.txt", "w")
+            f.write(text)
+            f.close()
+            await message.channel.send("Output too big! ;)")
+            await message.channel.send(file=discord.File("output.txt"))
+        return
+    
     else:
         return
 
