@@ -77,6 +77,7 @@ async def on_message(message):
             text = emulate(text)
         except Exception as x:
             await message.channel.send("ERROR: \n" + str(x))
+            return
             
         try:
             await message.channel.send("```\n" +
