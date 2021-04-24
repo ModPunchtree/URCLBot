@@ -203,7 +203,7 @@ def findBITSHeader() -> int:
             temp = code[i]
             code.pop(i)
             if temp.find("=") != -1:
-                return int(temp[temp.find("=") + 1:], 0)
+                return int(temp[temp.find("=") + 2:], 0)
             else:
                 return int(temp[4:], 0)
     return 8
