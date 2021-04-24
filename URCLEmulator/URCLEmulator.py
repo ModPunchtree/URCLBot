@@ -62,13 +62,21 @@ def emulate(raw: str) -> str:
     # headers
     # 1 find word length header, else assume 8 bits
     global BITS; BITS = findBITSHeader()
+    if BITS > 64:
+        raise Exception("FATAL - BITS cannot be more than 64")
 
     # 2 find MINREG, else calculate it
     MINREG = findMINREGHeader()
+    if MINREG > 2 ** BITS:
+        raise Exception("FATAL - MINREG cannot be more than " + str(2 ** BITS))
     
     # 3 find MINRAM, MINSTACK delete it
     MINRAM = findMINRAMHeader()
+    if MINRAM > 2 ** BITS:
+        raise Exception("FATAL - MINRAM cannot be more than " + str(2 ** BITS))
     MINSTACK = findMINSTACKHeader()
+    if MINSTACK > 2 ** BITS:
+        raise Exception("FATAL - MINSTACK cannot be more than " + str(2 ** BITS))
     
     # 4 find IMPORT, RUN RAM, return error
     findIMPORTRUNHeader()
@@ -175,13 +183,6 @@ def emulate(raw: str) -> str:
         totalCycles += 1
     
     # return warnings + all registers/initialised memory + outputList
-    #["M" + str(i) + ": " + str(j) if not(uninitialisedMem[i]) and type(j) != str else "" for i, j in enumerate(memory)]
-    temp = []
-    for i, j in enumerate(memory):
-        if uninitialisedMem[i] and type(j) != str:
-            temp.append("M" + str(i) + ": " + str(j))
-        
-        
     return ("\n".join(["WARNING - " + i for i in warnings]) + 
             "\n\nPC = " + str(PC) +
             "\nTotal number of cycles: " + str(totalCycles) + 
@@ -189,7 +190,7 @@ def emulate(raw: str) -> str:
             "\n\nRegisters:\n" + 
             "\n".join(["R" + str(i) + ": " + str(j) for i, j in enumerate(registers)][1:]) +
             "\n\nMemory:\n" +
-            "\n".join(filter(None, ["M" + str(i) + ": " + str(j) if uninitialisedMem[i] and type(j) != str else "" for i, j in enumerate(memory)])))
+            "\n".join(filter(None, ["M" + str(i - M0) + ": " + str(j) if uninitialisedMem[i] and type(j) != str and i >= M0 else "" for i, j in enumerate(memory)])))
 
 ################################################
 
