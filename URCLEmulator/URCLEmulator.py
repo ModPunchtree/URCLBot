@@ -122,7 +122,7 @@ def emulate(raw: str) -> str:
     # 7 PC = 0, R0 = 0, branch = False, ect.
     global PC; PC = 0
     global branch; branch = False
-    cycleLimit = 300
+    cycleLimit = 1000
     totalCycles = 0
     global warnings; warnings = ()
     global outputList; outputList = []
