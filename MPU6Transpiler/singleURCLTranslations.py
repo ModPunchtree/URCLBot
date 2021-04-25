@@ -370,17 +370,17 @@ def singleUrclTranslations() -> dict:
             "OUT %8SEG IMM": ["MOV(R0, <B>) HSH();;"],
             "OUT %8SEG NEWLINE": ["VSH();;"],
             "OUT %8SEG CLEAR": ["CLR();;"],
-            "OUT X REG": ["MOV(R0, <B>) XXX();;"],
-            "OUT X IMM": ["LDI(R0, <B>) XXX();;"],
-            "OUT Y REG": ["MOV(R0, <B>) YYY();;"],
-            "OUT Y IMM": ["LDI(R0, <B>) YYY();;"],
+            "OUT %"+"X REG": ["MOV(R0, <B>) XXX();;"],
+            "OUT %"+"X IMM": ["LDI(R0, <B>) XXX();;"],
+            "OUT %Y REG": ["MOV(R0, <B>) YYY();;"],
+            "OUT %Y IMM": ["LDI(R0, <B>) YYY();;"],
             "OUT PIXEL PRINT": ["PRT();;"],
             "OUT PIXEL ERASE": ["ERS();;"],
             "OUT PIXEL RESET": ["RST();;"],
             
-            "IN REG RNG": ["MPT(0x2C) FFG();;",
+            "IN REG %RNG": ["MPT(0x2C) FFG();;",
                            "MOV(<A>, MR); STL(+0);"],
-            "IN REG UI": ["MOV(<A>, IN);;"]
+            "IN REG %UI": ["MOV(<A>, IN);;"]
             }
     
     
