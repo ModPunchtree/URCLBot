@@ -136,12 +136,12 @@ def unaryToURCL() -> str:
         tokens.pop(index)
         tokenMap.pop(index)
     elif token == "return":
-        output.append("DEC SP, SP")
+        output.append("INC SP, SP")
         temp2 = fetch(tokens[index - 1])
-        output.append("PSH " + temp2)
+        output.append("STR SP, " + temp2)
         if temp2[len(functionScope) + 1: len(functionScope) + 5] == "TEMP":
             delVar(temp2)
-        output.append("INC SP, SP")
+        output.append("DEC SP, SP")
         output.append("RET")
         tokens.pop(index)
         tokenMap.pop(index)
@@ -153,7 +153,8 @@ def unaryToURCL() -> str:
         tokens.pop(index - 1)
         tokenMap.pop(index - 1)
     index = 0
-    output.append("//TEMP")
+    if token != "auto":
+        output.append("//TEMP")
     return ""
 
 def unaryConstant() -> str:
@@ -181,10 +182,10 @@ def unaryConstant() -> str:
     elif token == "auto":
         return createVariable(num)
     elif token == "return":
-        output.append("DEC SP, SP")
-        temp2 = fetch(tokens[index - 1])
-        output.append("PSH " + temp2)
         output.append("INC SP, SP")
+        temp2 = fetch(tokens[index - 1])
+        output.append("STR SP, " + temp2)
+        output.append("DEC SP, SP")
         output.append("RET")
         tokens.pop(index)
         tokenMap.pop(index)
@@ -501,7 +502,7 @@ def generateURCL(tokens_: list, tokenMap_: list, functions: list, variables_: li
                 functionScope = token[1:]
                 squigglyStack.append([token[1:], num])
 
-                output.append("DEC SP, SP")
+                output.append("INC SP, SP")
                 temp2 = 1
                 while tokens[index + 1][0] != "$":
                     y = createVariable(tokens[index + 1]) # defines input vars left to right
@@ -517,7 +518,7 @@ def generateURCL(tokens_: list, tokenMap_: list, functions: list, variables_: li
                 if temp2 == 1:
                     output.pop()
                 else:
-                    output.append("ADD SP, SP, " + str(temp2))
+                    output.append("SUB SP, SP, " + str(temp2))
                 functionInputs.append([functionScope, temp2 - 1])
                 
             elif token[1:] in ["if", "elseif", "else", "while"]:
@@ -588,7 +589,7 @@ def generateURCL(tokens_: list, tokenMap_: list, functions: list, variables_: li
                     tokens.pop(index - 1)
                     tokenMap.pop(index - 1)
                 elif token[1:] == "elseif":
-                    output.append("BRZ .elseStart" + str(lastIf() + 1) + ", " + location)
+                    output.append("BRZ .elseStart" + str(lastCon() + 1) + ", " + location)
                     output.append(".ifBody" + str(lastCon()))
                     tokens.pop(index)
                     tokenMap.pop(index)
@@ -668,12 +669,15 @@ def generateURCL(tokens_: list, tokenMap_: list, functions: list, variables_: li
                 tokenMap.pop(index - 1)
                 index -= 1
             if inputs == 0:
-                output.append("INC SP, SP")
+                output.append("DEC SP, SP")
             
             output.append("CAL ." + token)
             
             temp2 = createTEMP()
             output.append("POP " + fetch(temp2))
+            
+            if inputs > 1:
+                output.append("ADD SP, SP, " + str(inputs - 1))
             
             if functionScope == token: # restore variables
                 for i in definedVariables[::-1][1:]:
@@ -691,7 +695,9 @@ def generateURCL(tokens_: list, tokenMap_: list, functions: list, variables_: li
         
         elif token == "{":
             if squigglyStack[-1][0] in functions:
-                output.append("PSH 0")
+                output.append("INC SP, SP")
+                output.append("STR SP, 0")
+                output.append("DEC SP, SP")
                 output.append("RET")
                 output.append("." + functionScope + "_END" + squigglyStack[-1][1])
                 for i in RegVariables:

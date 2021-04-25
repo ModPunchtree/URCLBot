@@ -122,7 +122,7 @@ def emulate(raw: str) -> str:
     # 7 PC = 0, R0 = 0, branch = False, ect.
     global PC; PC = 0
     global branch; branch = False
-    cycleLimit = 1000
+    cycleLimit = 300
     totalCycles = 0
     global warnings; warnings = ()
     global outputList; outputList = []
@@ -141,6 +141,10 @@ def emulate(raw: str) -> str:
         
         # 1 find instruction
         op = fetchInstruction(instruction)
+
+        # check for stack underflow
+        if ((op in ("RET", "POP")) and (correctValue(SP) == 0)) or (SP > len(memory)):
+            raise Exception("FATAL - Stack underflow")
 
         # 2 get list of ops
         ops = getOps(instruction[len(op): ])
@@ -196,8 +200,10 @@ def emulate(raw: str) -> str:
               "\nTotal memory size = " + str(len(memory)) +
               "\n\nRegisters:\n" + 
               "\n".join(["R" + str(i) + ": " + str(j) for i, j in enumerate(registers)][1:]) +
-              "\n\nMemory:\n" +
-              "\n".join(filter(None, ["M" + str(i - M0) + ": " + str(j) if uninitialisedMem[i] and type(j) != str and i >= M0 else "" for i, j in enumerate(memory)])))
+              "\n\nMemory:    (M0 = " + str(M0) + ")\n" +
+              "\n".join(filter(None, ["M" + str(i - M0) + ": " + str(j) if uninitialisedMem[i] and type(j) != str and i >= M0 else "" for i, j in enumerate(memory)])) +
+              "\n\nOutput:\n" +
+              ", ".join([str(i) for i in outputList]))
     
     # return warnings + all registers/initialised memory + outputList
     return ("\n".join(["WARNING - " + i for i in warnings]) + 
@@ -207,8 +213,10 @@ def emulate(raw: str) -> str:
             "\nTotal memory size = " + str(len(memory)) +
             "\n\nRegisters:\n" + 
             "\n".join(["R" + str(i) + ": " + str(j) for i, j in enumerate(registers)][1:]) +
-            "\n\nMemory:\n" +
-            "\n".join(filter(None, ["M" + str(i - M0) + ": " + str(j) if uninitialisedMem[i] and type(j) != str and i >= M0 else "" for i, j in enumerate(memory)])))
+            "\n\nMemory:    (M0 = " + str(M0) + ")\n" +
+            "\n".join(filter(None, ["M" + str(i - M0) + ": " + str(j) if uninitialisedMem[i] and type(j) != str and i >= M0 else "" for i, j in enumerate(memory)])) +
+            "\n\nOutput:\n" +
+            ", ".join([str(i) for i in outputList]))
 
 ################################################
 
@@ -245,7 +253,7 @@ def findMINRAMHeader() -> int:
     return MINRAM
 
 def findMINSTACKHeader() -> int:
-    MINSTACK = 0
+    MINSTACK = 8
     for i in range(len(code)):
         if code[i].startswith("MINSTACK"):
             MINSTACK = int(code[i][8:], 0)
@@ -362,7 +370,7 @@ def uninitialisedFetch(op: str, ops: tuple, opTypes: tuple, uninitialisedReg: li
         if opTypes[0] == "REG":
             temp = uninitialisedReg[num]
         elif opTypes[0] == "MEM":
-            temp = uninitialisedMemory[num]
+            temp = not uninitialisedMemory[num]
 
     elif op in ("BOD", "BEV", "BRZ", "BZR", "BNZ", "BZN", "BRN", "BRP"):
         if ops[0].isnumeric():
@@ -374,7 +382,7 @@ def uninitialisedFetch(op: str, ops: tuple, opTypes: tuple, uninitialisedReg: li
         if opTypes[0] == "REG":
             temp = uninitialisedReg[num]
         elif opTypes[0] == "MEM":
-            temp = uninitialisedMemory[num]
+            temp = not uninitialisedMemory[num]
         if ops[1].isnumeric():
             num = int(ops[1])
         elif ops[1] == "SP":
@@ -384,7 +392,7 @@ def uninitialisedFetch(op: str, ops: tuple, opTypes: tuple, uninitialisedReg: li
         if opTypes[1] == "REG":
             temp = uninitialisedReg[num] or temp
         elif opTypes[1] == "MEM":
-            temp = uninitialisedMemory[num] or temp
+            temp = not uninitialisedMemory[num] or temp
 
     elif (len(ops) == 2) and (op != "IN"):
         if ops[1].isnumeric():
@@ -396,7 +404,7 @@ def uninitialisedFetch(op: str, ops: tuple, opTypes: tuple, uninitialisedReg: li
         if opTypes[1] == "REG":
             temp = uninitialisedReg[num]
         elif opTypes[1] == "MEM":
-            temp = uninitialisedMemory[num]
+            temp = not uninitialisedMemory[num]
     
     elif op in ("BGR", "BRL", "BRG", "BRE", "BNE", "BLE"):
         if ops[0].isnumeric():
@@ -408,7 +416,7 @@ def uninitialisedFetch(op: str, ops: tuple, opTypes: tuple, uninitialisedReg: li
         if opTypes[0] == "REG":
             temp = uninitialisedReg[num]
         elif opTypes[0] == "MEM":
-            temp = uninitialisedMemory[num]
+            temp = not uninitialisedMemory[num]
         if ops[1].isnumeric():
             num = int(ops[1])
         elif ops[1] == "SP":
@@ -418,7 +426,7 @@ def uninitialisedFetch(op: str, ops: tuple, opTypes: tuple, uninitialisedReg: li
         if opTypes[1] == "REG":
             temp = uninitialisedReg[num] or temp
         elif opTypes[1] == "MEM":
-            temp = uninitialisedMemory[num] or temp
+            temp = not uninitialisedMemory[num] or temp
         if ops[2].isnumeric():
             num = int(ops[2])
         elif ops[2] == "SP":
@@ -428,7 +436,7 @@ def uninitialisedFetch(op: str, ops: tuple, opTypes: tuple, uninitialisedReg: li
         if opTypes[2] == "REG":
             temp = uninitialisedReg[num] or temp
         elif opTypes[2] == "MEM":
-            temp = uninitialisedMemory[num] or temp
+            temp = not uninitialisedMemory[num] or temp
     
     elif len(ops) == 3:
         if ops[1].isnumeric():
@@ -440,7 +448,7 @@ def uninitialisedFetch(op: str, ops: tuple, opTypes: tuple, uninitialisedReg: li
         if opTypes[1] == "REG":
             temp = uninitialisedReg[num]
         elif opTypes[1] == "MEM":
-            temp = uninitialisedMemory[num]
+            temp = not uninitialisedMemory[num]
         if ops[2].isnumeric():
             num = int(ops[2])
         elif ops[2] == "SP":
@@ -450,7 +458,7 @@ def uninitialisedFetch(op: str, ops: tuple, opTypes: tuple, uninitialisedReg: li
         if opTypes[2] == "REG":
             temp = uninitialisedReg[num] or temp
         elif opTypes[2] == "MEM":
-            temp = uninitialisedMemory[num] or temp
+            temp = not uninitialisedMemory[num] or temp
             
     return temp
 
@@ -479,9 +487,11 @@ def fetchOps(op: str, ops: tuple) -> tuple:
 def fetch(operand: str, op: str, absMem: bool = False) -> int:
     global SP
     if op in ("POP", "RET"):
-        temp = fetch(SP, "LOD", True)
+        temp = fetch(str(SP), "LOD", True)
         SP += 1
         return temp
+    elif (operand == "SP") and (op == "LOD"):
+        return memory[SP]
     elif operand == "PC":
         return PC
     elif operand == "SP":
@@ -675,7 +685,10 @@ def writeResult(op: str, result: int, ops: tuple, fetchList: tuple) -> None:
     elif op == "LOD":
         write(ops[0], result)
     elif op == "STR":
-        write(ops[0], result)
+        if ops[0] == "SP":
+            write(str(SP), result)
+        else:
+            write(ops[0], result)
     elif op == "JMP":
         write("PC", result)
     elif op == "BGE":
@@ -801,11 +814,11 @@ def write(location: str, value: int) -> None:
     elif location.startswith("M"):
         num = int(location[1:])
         memory[num + M0] = value
-        uninitialisedMem[num] = False
+        uninitialisedMem[num] = True
     elif location.isnumeric():
         num = int(location)
         memory[num] = value
-        uninitialisedMem[num] = False
+        uninitialisedMem[num] = True
     elif location == "PC":
         num = int(value)
         PC = num
