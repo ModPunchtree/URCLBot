@@ -114,3 +114,6 @@ def fetchNone(op: str) -> bool:
     if op in ("NOP", "POP", "RET", "HLT"):
         return True
     return False
+
+def alpha() -> str:
+    return "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_"

@@ -1,9 +1,85 @@
 $URCL
-BITS >= 8
-MINREG 0
+BITS == 8
+MINREG 5
 MINRAM 0
-MINSTACK 0
-CAL .test
-HLT
-.test
+MINSTACK 256
+JMP .main_END11
+.ack
+INC SP, SP
+POP R1
+POP R2
+SUB SP, SP, 3
+BNE .ifHead2, R1, 0
+INC R3, R2
+JMP .elseEnd1
+.ifHead2
+BNE .ifHead2, R2, 0
+DEC R4, R1
+PSH R1
+PSH R2
+PSH R3
+PSH 1
+PSH R4
+CAL .ack
+POP R4
+POP R3
+POP R2
+POP R1
+MOV R3, R4
+JMP .elseEnd1
+DEC R4, R1
+DEC R5, R2
+PSH R1
+PSH R2
+PSH R3
+PSH R4
+PSH R5
+PSH R1
+CAL .ack
+POP R5
+POP R4
+POP R3
+POP R2
+POP R1
+PSH R1
+PSH R2
+PSH R3
+PSH R5
+PSH R4
+CAL .ack
+POP R4
+POP R3
+POP R2
+POP R1
+MOV R3, R4
+.elseEnd1
+INC SP, SP
+PSH R3
+DEC SP, SP
 RET
+.main
+IMM R1, 0
+IMM R2, 0
+.whileHead12
+BGE .whileEnd12, R1, 6
+.whileHead14
+BGE .whileEnd14, R2, 6
+PSH R2
+PSH R1
+CAL .ack
+POP R4
+MOV R3, R4
+OUT %display, R3 
+INC R2, R2
+JMP .whileHead14
+.whileEnd14
+INC R1, R1
+JMP .whileHead12
+.whileEnd12
+PSH 0
+RET
+.main_END11
+DEC SP, SP
+CAL .main
+POP R1
+HLT

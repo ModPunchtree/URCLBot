@@ -1,4 +1,5 @@
 
+from URCLEmulator.constants import alpha
 from URCLEmulator.constants import fetchNone, fetchOne, fetchOneTwo, fetchOneTwoThree, fetchTwo, fetchTwoThree, numberOfOps, urcl, validOpTypes
 
 def emulate(raw: str) -> str:
@@ -135,6 +136,8 @@ def emulate(raw: str) -> str:
     global instruction
     while totalCycles < cycleLimit:
         instruction = memory[PC]
+        if type(instruction) != str:
+            raise Exception("FATAL - Tried to execute non-instruction: " + str(instruction))
         
         # 1 find instruction
         op = fetchInstruction(instruction)
@@ -184,6 +187,17 @@ def emulate(raw: str) -> str:
             branch = False
         
         totalCycles += 1
+    
+        print("\n".join(["WARNING - " + i for i in warnings]) + 
+              "\n\nInstruction just completed = " + str(instruction) +
+              "\nPC = " + str(PC) +
+              "\nTotal number of cycles: " + str(totalCycles) + 
+              "\nStack Pointer = " + str(correctValue(SP)) +
+              "\nTotal memory size = " + str(len(memory)) +
+              "\n\nRegisters:\n" + 
+              "\n".join(["R" + str(i) + ": " + str(j) for i, j in enumerate(registers)][1:]) +
+              "\n\nMemory:\n" +
+              "\n".join(filter(None, ["M" + str(i - M0) + ": " + str(j) if uninitialisedMem[i] and type(j) != str and i >= M0 else "" for i, j in enumerate(memory)])))
     
     # return warnings + all registers/initialised memory + outputList
     return ("\n".join(["WARNING - " + i for i in warnings]) + 
@@ -260,7 +274,10 @@ def resolveLabels() -> None:
     global code
     for i in range(len(code)):
         if code[i].startswith("."):
-            code = [j.replace(code[i], str(i)) for j in code]
+            x = code[i]
+            for j, k in enumerate(code):
+                if k.find(x) != -1 and k[k.find(x) + len(x): k.find(x) + len(x) + 1] not in tuple(alpha() + "0123456789"):
+                    code[j] = k.replace(x, str(i))
             code.pop(i)
             return resolveLabels()
 
@@ -310,7 +327,7 @@ def getOps(text: str) -> tuple:
 def getOpsType(ops: tuple) -> tuple:
     answer = ()
     for i in ops:
-        if i.startswith("R"):
+        if i.startswith("R") or i == "SP":
             answer += ("REG",)
         elif i.startswith("M"):
             answer += ("MEM",)
@@ -338,6 +355,8 @@ def uninitialisedFetch(op: str, ops: tuple, opTypes: tuple, uninitialisedReg: li
     if (len(ops) == 1) and (op != "POP"):
         if ops[0].isnumeric():
             num = int(ops[0])
+        elif ops[0] == "SP":
+            num = 0
         else:
             num = int(ops[0][1:])
         if opTypes[0] == "REG":
@@ -348,6 +367,8 @@ def uninitialisedFetch(op: str, ops: tuple, opTypes: tuple, uninitialisedReg: li
     elif op in ("BOD", "BEV", "BRZ", "BZR", "BNZ", "BZN", "BRN", "BRP"):
         if ops[0].isnumeric():
             num = int(ops[0])
+        elif ops[0] == "SP":
+            num = 0
         else:
             num = int(ops[0][1:])
         if opTypes[0] == "REG":
@@ -356,6 +377,8 @@ def uninitialisedFetch(op: str, ops: tuple, opTypes: tuple, uninitialisedReg: li
             temp = uninitialisedMemory[num]
         if ops[1].isnumeric():
             num = int(ops[1])
+        elif ops[1] == "SP":
+            num = 0
         else:
             num = int(ops[1][1:])
         if opTypes[1] == "REG":
@@ -366,6 +389,8 @@ def uninitialisedFetch(op: str, ops: tuple, opTypes: tuple, uninitialisedReg: li
     elif (len(ops) == 2) and (op != "IN"):
         if ops[1].isnumeric():
             num = int(ops[1])
+        elif ops[1] == "SP":
+            num = 0
         else:
             num = int(ops[1][1:])
         if opTypes[1] == "REG":
@@ -376,6 +401,8 @@ def uninitialisedFetch(op: str, ops: tuple, opTypes: tuple, uninitialisedReg: li
     elif op in ("BGR", "BRL", "BRG", "BRE", "BNE", "BLE"):
         if ops[0].isnumeric():
             num = int(ops[0])
+        elif ops[0] == "SP":
+            num = 0
         else:
             num = int(ops[0][1:])
         if opTypes[0] == "REG":
@@ -384,6 +411,8 @@ def uninitialisedFetch(op: str, ops: tuple, opTypes: tuple, uninitialisedReg: li
             temp = uninitialisedMemory[num]
         if ops[1].isnumeric():
             num = int(ops[1])
+        elif ops[1] == "SP":
+            num = 0
         else:
             num = int(ops[1][1:])
         if opTypes[1] == "REG":
@@ -392,6 +421,8 @@ def uninitialisedFetch(op: str, ops: tuple, opTypes: tuple, uninitialisedReg: li
             temp = uninitialisedMemory[num] or temp
         if ops[2].isnumeric():
             num = int(ops[2])
+        elif ops[2] == "SP":
+            num = 0
         else:
             num = int(ops[2][1:])
         if opTypes[2] == "REG":
@@ -402,6 +433,8 @@ def uninitialisedFetch(op: str, ops: tuple, opTypes: tuple, uninitialisedReg: li
     elif len(ops) == 3:
         if ops[1].isnumeric():
             num = int(ops[1])
+        elif ops[1] == "SP":
+            num = 0
         else:
             num = int(ops[1][1:])
         if opTypes[1] == "REG":
@@ -410,6 +443,8 @@ def uninitialisedFetch(op: str, ops: tuple, opTypes: tuple, uninitialisedReg: li
             temp = uninitialisedMemory[num]
         if ops[2].isnumeric():
             num = int(ops[2])
+        elif ops[2] == "SP":
+            num = 0
         else:
             num = int(ops[2][1:])
         if opTypes[2] == "REG":
@@ -442,6 +477,7 @@ def fetchOps(op: str, ops: tuple) -> tuple:
         raise Exception("FATAL - Failed to fetch operands for: " + instruction)
 
 def fetch(operand: str, op: str, absMem: bool = False) -> int:
+    global SP
     if op in ("POP", "RET"):
         temp = fetch(SP, "LOD", True)
         SP += 1
