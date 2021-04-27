@@ -34,7 +34,7 @@ def getOpTypes(ops: tuple) -> tuple:
     return types
             
 def MPU6Transpile(code: tuple) -> tuple:
-    output = ()
+    output = ("LDI(R10, 32);;",)
     line = 0
     urclCode = cleanCode(code)
 
