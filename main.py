@@ -1,5 +1,6 @@
 # main file for repl.it 
 
+from genericURCLOptimiser.genericURCLOptimiser import genericURCLoptimiser
 from URCLEmulator.URCLEmulator import emulate
 import discord
 import os
@@ -91,6 +92,26 @@ async def on_message(message):
             await message.channel.send(file=discord.File("output.txt"))
         return
     
+    elif message.content.startswith("$optimise"):
+        if message.content[10 :]:
+            if message.content[10].isnumeric():
+                BITS = int(message.content[10 : message.content.index("\n")])
+            else:
+                BITS = 8
+        else:
+            BITS = 8
+        await message.channel.send("Optimising...")
+        try:
+            text = "\n".join(genericURCLoptimiser(message.content), BITS)
+        except Exception as x:
+            await message.channel.send("ERROR: \n" + str(x))
+            return
+        f = open("output.txt", "w")
+        f.write(text)
+        f.close()
+        await message.channel.send(file=discord.File("output.txt"))
+        return
+
     else:
         return
 

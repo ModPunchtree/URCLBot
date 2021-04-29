@@ -1,8 +1,11 @@
-$MPU6
-.PSH 0
-.PSH 2
-CAL .ack
-POP R1
+$optimise
+STR M31, 0 
+STR M30, 2
+STR M29, .ret
+IMM SP, 29
+JMP .ack
+.ret
+LOD R1, SP
 OUT %X, R1
 HLT
 .ack
@@ -10,45 +13,43 @@ INC SP, SP
 POP R1
 POP R2
 SUB SP, SP, 3      
-BNE .ifHead2, R1, 0
+BNZ .ifHead2, R1
 INC R3, R2
 JMP .elseEnd1
 .ifHead2
-BNE .elseStart3, R2, 0
+BNZ .elseStart3, R2
 DEC R4, R1
-.PSH R1
-.PSH R2
-.PSH R3
-.PSH 1
-.PSH R4
+PSH R1
+PSH R2
+PSH R3
+PSH 1
+PSH R4
 CAL .ack
 POP R3
-INC SP, SP
-INC SP, SP
-.POP R2
-.POP R1
+ADD SP, SP, 2
+POP R2
+POP R1
 JMP .elseEnd1
 .elseStart3
 DEC R4, R1
 DEC R5, R2
-.PSH R1
-.PSH R2
-.PSH R3
-.PSH R4
-.PSH R5
-.PSH R1
+PSH R1
+PSH R2
+PSH R3
+PSH R4
+PSH R5
+PSH R1
 CAL .ack
-.POP R5
-.INC SP, SP
-.POP R4
-.PSH R5
-.PSH R4
+POP R5
+INC SP, SP
+POP R4
+PSH R5
+PSH R4
 CAL .ack
 POP R3
-INC SP, SP
-INC SP, SP
-.POP R2
-.POP R1
+ADD SP, SP, 2
+POP R2
+POP R1
 .elseEnd1
 INC SP, SP
 STR SP, R3
