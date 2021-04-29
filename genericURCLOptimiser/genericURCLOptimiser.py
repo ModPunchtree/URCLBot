@@ -65,6 +65,9 @@ from genericURCLOptimiser.constants import alpha
     # 45 SETL  -> MOV, NOP
     # 46 SETGE -> MOV, NOP
     # 47 SETLE -> MOV, NOP
+    # 48 INC   -> MOV, NOP
+    # 49 NOP   -> 
+    # 50 IMM   -> NOP
 
 # miscellaneous optimisations
     # SETBNZ
@@ -870,6 +873,23 @@ def singleInstructionOptimisations(code: list, BITS: int) -> list:
                 code[i] = "SETE " + ops[0] + ", " + ops[1] + ", " + ops[2]
                 return code
             
+        # 48 INC   -> NOP
+        elif op == "INC":
+            if ops[0] == "R0":
+                code.pop(i)
+                return code
+        
+        # 49 NOP   -> 
+        elif op == "NOP":
+            code.pop(i)
+            return code
+        
+        # 50 IMM   -> NOP
+        elif op == "IMM":
+            if ops[0] == "R0":
+                code.pop(i)
+                return code
+        
         else:
             raise Exception("FATAL - Unrecognised instruction: " + str(code[i]))
     return code
@@ -1126,7 +1146,15 @@ def constantFolding(code: list, BITS: int) -> list:
                     else:
                         code[i] = "IMM " + ops[0] + ", 0"
                     return code
-        
+            elif op == "INC":
+                if ops[1][0].isnumeric():
+                    code[i] = "IMM " + ops[0] + ", " + correctValue(int(ops[1], 0))
+                    return code
+            elif op == "NOP":
+                code.pop(i)
+                return code
+            elif op == "IMM":
+                pass
     return code
 
 def correctValue(value: str, BITS: int) -> str:
