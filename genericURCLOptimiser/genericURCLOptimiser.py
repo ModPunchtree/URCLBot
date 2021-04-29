@@ -183,13 +183,23 @@ def relativesToLabels(code: list) -> list:
             num = readNum(j[j.find("+") + 1: ])
             label = ".relativeLabel" + uniqueNumber()
             code[i] = code[i].replace("+" + str(num), label)
-            code.insert(i + num, label)
+            temp = i
+            while num > 0:
+                if not code[temp].startswith("."):
+                    num -= 1
+                temp += 1
+            code.insert(temp, label)
             return relativesToLabels(code)
         elif j.find("-") != -1:
             num = readNum(j[j.find("-") + 1: ])
             label = ".relativeLabel" + uniqueNumber()
             code[i] = code[i].replace("-" + str(num), label)
-            code.insert(i - num, label)
+            temp = i
+            while num > 0:
+                if not code[temp].startswith("."):
+                    num -= 1
+                temp += 1
+            code.insert(temp, label)
             return relativesToLabels(code)
     return code
 
@@ -213,11 +223,11 @@ def deleteDuplicateLabels(code: list) -> list:
             return code
         if j.startswith(".") and code[i + 1].startswith("."):
             code.pop(i)
-            for k, l in code:
-                while (l.find(j) != -1) and (i[l.find(j) + 1: l.find(j) + 2] in [i for i in alpha()]):
+            for k, l in enumerate(code):
+                while (l.find(j) != -1) and (j[l.find(j) + 1: l.find(j) + 2] in [i for i in alpha()]):
                     l = l.replace(j, code[i], 1)
                 code[k] = l
-                return deleteDuplicateLabels(code)
+            return deleteDuplicateLabels(code)
 
 def shortcutBranches(code: list) -> list:
     for i, j in enumerate(code):
