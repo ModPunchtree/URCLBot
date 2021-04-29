@@ -84,7 +84,7 @@ def genericURCLoptimiser(raw: str, BITS: int) -> list:
     # 1 cut off $optimise
     if type(raw) == str:
         if raw.startswith("$optimise"):
-            code = raw[9: ]
+            code = raw[raw.index("\n"): ]
         else:
             code = raw
         code = code.split("\n")
@@ -110,8 +110,9 @@ def genericURCLoptimiser(raw: str, BITS: int) -> list:
 
     # optimisation loop
     while True:
+        oldCode = [i for i in code]
         returnedCode = optimise(code, BITS)
-        if code == returnedCode:
+        if oldCode == returnedCode:
             return code
         code = returnedCode
 
@@ -121,36 +122,41 @@ def optimise(code: list, BITS: int) -> list:
     code = deleteDuplicateLabels(code)
     
     # 2 shortcut branches
+    oldCode = [i for i in code]
     returnedCode = shortcutBranches(code)
-    if code == returnedCode:
+    if oldCode != returnedCode:
         return returnedCode
     else:
         code = returnedCode
         
     # 3 delete useless branches
+    oldCode = [i for i in code]
     returnedCode = deleteUselessBranches(code)
-    if code == returnedCode:
+    if oldCode != returnedCode:
         return returnedCode
     else:
         code = returnedCode
     
     # constant folding
+    oldCode = [i for i in code]
     returnedCode = constantFolding(code, BITS)
-    if code == returnedCode:
+    if oldCode != returnedCode:
         return returnedCode
     else:
         code = returnedCode
     
     # single instruction optimisations
+    oldCode = [i for i in code]
     returnedCode = singleInstructionOptimisations(code, BITS)
-    if code == returnedCode:
+    if oldCode != returnedCode:
         return returnedCode
     else:
         code = returnedCode
         
     # miscellaneous optimisations
+    oldCode = [i for i in code]
     returnedCode = miscellaneousOptimisations(code, BITS)
-    if code == returnedCode:
+    if oldCode != returnedCode:
         return returnedCode
     else:
         code = returnedCode
@@ -228,7 +234,7 @@ def deleteUselessBranches(code: list) -> list:
 def singleInstructionOptimisations(code: list, BITS: int) -> list:
     for i, j in enumerate(code):
         op = readOperation(j)
-        ops = readOps(j[len(op): ])
+        ops = readOps(j[len(op) + 1: ])
         
         # 1  ADD   -> LSH, MOV, INC, DEC, NOP
         if op == "ADD":
@@ -345,6 +351,9 @@ def singleInstructionOptimisations(code: list, BITS: int) -> list:
             elif ops[1][0].isnumeric():
                 code[i] = "IMM " + ops[0] + ", " + ops[1]
                 return code
+            elif ops[0] == ops[1]:
+                code.pop(i)
+                return code
 
         # 10 LSH   -> NOP
         elif op == "LSH":
@@ -440,7 +449,7 @@ def singleInstructionOptimisations(code: list, BITS: int) -> list:
                 return code
             
         # 18 NAND  -> NOT, MOV, NOP
-        if op == "NAND":
+        elif op == "NAND":
             if ops[0] == "R0":
                 code.pop(i)
                 return code
@@ -522,13 +531,13 @@ def singleInstructionOptimisations(code: list, BITS: int) -> list:
         
         # 23 BOD   -> JMP, NOP
         elif op == "BOD":
-            if ops[1] == "R0":
+            if ops[0] == "R0":
                 code.pop(i)
                 return code
         
         # 24 BEV   -> JMP, NOP
         elif op == "BEV":
-            if ops[1] == "R0":
+            if ops[0] == "R0":
                 code[i] = "JMP " + ops[0]
                 return code
         
@@ -555,25 +564,25 @@ def singleInstructionOptimisations(code: list, BITS: int) -> list:
         
         # 26 BRZ   -> JMP, NOP
         elif op == "BRZ":
-            if ops[1] == "R0":
+            if ops[0] == "R0":
                 code[i] = "JMP " + ops[0]
                 return code
         
         # 27 BNZ   -> JMP, NOP
         elif op == "BNZ":
-            if ops[1] == "R0":
+            if ops[0] == "R0":
                 code.pop(i)
                 return code
         
         # 28 BRN   -> JMP, NOP
         elif op == "BRN":
-            if ops[1] == "R0":
+            if ops[0] == "R0":
                 code.pop(i)
                 return code
             
         # 29 BRP   -> JMP, NOP
         elif op == "BRP":
-            if ops[1] == "R0":
+            if ops[0] == "R0":
                 code[i] = "JMP " + ops[0]
                 return code
         
@@ -583,7 +592,7 @@ def singleInstructionOptimisations(code: list, BITS: int) -> list:
         
         # 31 POP   -> INC
         elif op == "POP":
-            if ops[1] == "R0":
+            if ops[0] == "R0":
                 code[i] = "INC SP, SP"
                 return code
         
@@ -877,6 +886,9 @@ def readOps(text: str) -> tuple:
     for i in text:
         if i == ",":
             ops += (temp,)
+            temp = ""
+        elif i == " ":
+            pass
         else:
             temp += i
     if temp:
@@ -1128,36 +1140,41 @@ def correctValue(value: str, BITS: int) -> str:
 def miscellaneousOptimisations(code: list, BITS: int) -> list:
     
     # SETBNZ
+    oldCode = [i for i in code]
     returnedCode = SETBRZ(code)
-    if code == returnedCode:
+    if oldCode != returnedCode:
         return returnedCode
     else:
         code = returnedCode
         
     # LODSTR
+    oldCode = [i for i in code]
     returnedCode = LODSTR(code)
-    if code == returnedCode:
+    if oldCode != returnedCode:
         return returnedCode
     else:
         code = returnedCode
     
     # STRLOD
+    oldCode = [i for i in code]
     returnedCode = STRLOD(code)
-    if code == returnedCode:
+    if oldCode != returnedCode:
         return returnedCode
     else:
         code = returnedCode
         
     # PSHPOP
+    oldCode = [i for i in code]
     returnedCode = PSHPOP(code)
-    if code == returnedCode:
+    if oldCode != returnedCode:
         return returnedCode
     else:
         code = returnedCode
     
     # POPPSH
+    oldCode = [i for i in code]
     returnedCode = POPPSH(code)
-    if code == returnedCode:
+    if oldCode != returnedCode:
         return returnedCode
     else:
         code = returnedCode
@@ -1165,7 +1182,9 @@ def miscellaneousOptimisations(code: list, BITS: int) -> list:
     return code
 
 def SETBRZ(code: list) -> list:
-    for i, j in enumerate(code)[: -1]:
+    for i, j in enumerate(code):
+        if i == len(code) - 1:
+            break
         if j.startswith("SET") and code[i + 1].startswith("BRZ") and code[i + 1][code[i + 1].find(",") + 2: ] == j[j.find(" ") + 1: j.find(",")]:
             if j[3: 5] == "GE":
                 code[i + 1] = "BRL " + code[i + 1][4: code[i + 1].index(",")] + j[j.index(","): ]
@@ -1186,21 +1205,27 @@ def SETBRZ(code: list) -> list:
     return code
 
 def LODSTR(code: list) -> list:
-    for i, j in enumerate(code)[: -1]:
+    for i, j in enumerate(code):
+        if i == len(code) - 1:
+            break
         if j.startswith("LOD") and code[i + 1].startswith("STR") and j[j.find(" ") + 1: j.find(",")] == code[i + 1][code[i + 1].index(",") + 2: ] and j[j.find(",") + 2: ] == code[i + 1][code[i + 1].find(" ") + 1: code[i + 1].find(",")]:
             code.pop(i + 1)
             return LODSTR(code)
     return code
 
 def STRLOD(code: list) -> list:
-    for i, j in enumerate(code)[: -1]:
+    for i, j in enumerate(code):
+        if i == len(code) - 1:
+            break
         if j.startswith("STR") and code[i + 1].startswith("LOD") and j[j.find(" ") + 1: j.find(",")] == code[i + 1][code[i + 1].find(",") + 2: ]:
             code[i + 1] = "MOV " + code[i + 1][4: code[i + 1].index(",")] + j[j.index(","): ]
             return STRLOD(code)
     return code
 
 def PSHPOP(code: list) -> list:
-    for i, j in enumerate(code)[: -1]:
+    for i, j in enumerate(code):
+        if i == len(code) - 1:
+            break
         if j.startswith("PSH") and code[i + 1].startswith("POP"):
             code[i + 1] = "MOV " + j[j.index(" ") + 1: ] + ", " + code[i + 1][code[i + 1].index(" ") + 1: ]
             code.pop(i)
@@ -1208,7 +1233,9 @@ def PSHPOP(code: list) -> list:
     return code
 
 def POPPSH(code: list) -> list:
-    for i, j in enumerate(code)[: -1]:
+    for i, j in enumerate(code):
+        if i == len(code) - 1:
+            break
         if j.startswith("POP") and code[i + 1].startswith("PSH"):
             code[i] = "LOD " + j[j.index(" ") + 1: ] + ", SP"
             code[i + 1] = "STR SP, " + code[i + 1][code[i + 1].index(" ") + 1: ]
