@@ -92,7 +92,7 @@ async def on_message(message):
             await message.channel.send(file=discord.File("output.txt"))
         return
     
-    elif message.content.startswith("$optimise"):
+    elif message.content.startswith("$optimise") or message.content.startswith("$optimize"):
         if message.content[10 :]:
             if message.content[10].isnumeric():
                 BITS = int(message.content[10 : message.content.index("\n")])

@@ -83,7 +83,7 @@ def genericURCLoptimiser(raw: str, BITS: int) -> list:
     # clean code
     # 1 cut off $optimise
     if type(raw) == str:
-        if raw.startswith("$optimise"):
+        if raw.startswith("$optimise") or raw.startswith("$optimize"):
             code = raw[raw.index("\n"): ]
         else:
             code = raw
