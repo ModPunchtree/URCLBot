@@ -102,7 +102,7 @@ async def on_message(message):
             BITS = 8
         await message.channel.send("Optimising...")
         try:
-            text = "\n".join(genericURCLoptimiser(message.content), BITS)
+            text = "\n".join(genericURCLoptimiser(message.content, BITS))
         except Exception as x:
             await message.channel.send("ERROR: \n" + str(x))
             return
