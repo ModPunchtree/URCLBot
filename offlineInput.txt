@@ -1,5 +1,3 @@
 $optimise 8
-JMP +2
-JMP +2
-JMP -1
+BRG +1, 10, 5
 HLT

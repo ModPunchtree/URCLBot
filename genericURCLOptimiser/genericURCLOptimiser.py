@@ -250,11 +250,13 @@ def deleteUselessBranches(code: list) -> list:
         if i == len(code) - 1:
             return code
         if j.startswith(("JMP", "BGE", "BLE", "BRG", "BRL", "BRZ", "BNZ", "BOD", "BEV", "BRP", "BRN")):
+            label = ""
             if j.startswith("JMP"):
                 label = j[4: ]
-            if code[i + 1] == label:
-                code.pop(i)
-                return deleteUselessBranches(code)
+            if label:
+                if code[i + 1] == label:
+                    code.pop(i)
+                    return deleteUselessBranches(code)
 
 def deleteUselessLabels(code: list) -> list:
     for i, j in enumerate(code):
