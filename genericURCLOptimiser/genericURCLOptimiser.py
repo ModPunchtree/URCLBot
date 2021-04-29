@@ -140,6 +140,14 @@ def optimise(code: list, BITS: int) -> list:
     else:
         code = returnedCode
     
+    # 4 delete useless labels
+    oldCode = [i for i in code]
+    returnedCode = deleteUselessLabels(code)
+    if oldCode != returnedCode:
+        return returnedCode
+    else:
+        code = returnedCode
+    
     # constant folding
     oldCode = [i for i in code]
     returnedCode = constantFolding(code, BITS)
@@ -173,11 +181,15 @@ def relativesToLabels(code: list) -> list:
     for i, j in enumerate(code):
         if j.find("+") != -1:
             num = readNum(j[j.find("+") + 1: ])
-            code.insert(i + j, ".relativeLabel" + uniqueNumber())
+            label = ".relativeLabel" + uniqueNumber()
+            code[i] = code[i].replace("+" + str(num), label)
+            code.insert(i + num, label)
             return relativesToLabels(code)
         elif j.find("-") != -1:
             num = readNum(j[j.find("-") + 1: ])
-            code.insert(i - j, ".relativeLabel" + uniqueNumber())
+            label = ".relativeLabel" + uniqueNumber()
+            code[i] = code[i].replace("-" + str(num), label)
+            code.insert(i - num, label)
             return relativesToLabels(code)
     return code
 
@@ -233,6 +245,18 @@ def deleteUselessBranches(code: list) -> list:
             if code[i + 1] == label:
                 code.pop(i)
                 return deleteUselessBranches(code)
+
+def deleteUselessLabels(code: list) -> list:
+    for i, j in enumerate(code):
+        if j.startswith("."):
+            useful = False
+            for k in code:
+                if k.find(j) != -1 and not k.startswith("."):
+                    useful = True
+            if not useful:
+                code.pop(i)
+                return deleteUselessLabels(code)
+    return code
 
 def singleInstructionOptimisations(code: list, BITS: int) -> list:
     for i, j in enumerate(code):
@@ -889,6 +913,9 @@ def singleInstructionOptimisations(code: list, BITS: int) -> list:
             if ops[0] == "R0":
                 code.pop(i)
                 return code
+        
+        elif op.startswith("."):
+            pass
         
         else:
             raise Exception("FATAL - Unrecognised instruction: " + str(code[i]))

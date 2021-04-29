@@ -1,4 +1,3 @@
 $optimise 8
-PSH R1
-POP R1
+JMP +1
 HLT
