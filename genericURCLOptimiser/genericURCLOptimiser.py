@@ -199,6 +199,14 @@ def optimise(code: list, BITS: int) -> list:
     else:
         code = returnedCode
     
+    # optimise PSHIMM then POP
+    oldCode = [i for i in code]
+    returnedCode = PSHIMMthenPOP(code)
+    if oldCode != returnedCode:
+        return returnedCode
+    else:
+        code = returnedCode
+    
     return code
 
 def relativesToLabels(code: list) -> list:
@@ -1448,3 +1456,23 @@ def fetchValue(code: list, i: int, target) -> str:
             elif ops2[0] == target and op2 == "IMM":
                 value = ops2[1]
     return value
+
+def PSHIMMthenPOP(code: list) -> list:
+    for i, j in enumerate(code):
+        if j.startswith("POP"):
+            if j[j.index(" ") + 1: ][0] == "R":
+                num = 0
+                for k in code[: i][: : -1]:
+                    num -= 1
+                    if k.startswith("."):
+                        pass
+                    elif k.startswith("PSH"):
+                        if k[k.index(" ") + 1: ][0].isnumeric():
+                            code[i] = "IMM " + j[j.index(" ") + 1: ] + ", " + k[k.index(" ") + 1: ]
+                            code.pop(i + num)
+                            return PSHIMMthenPOP(code)
+    return code
+
+
+
+
