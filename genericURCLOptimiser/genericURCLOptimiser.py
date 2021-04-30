@@ -1349,6 +1349,7 @@ def optimiseWriteBeforeRead(code: list) -> list:
                     break
                 nextInstructions.append(k)
             useful = False
+            overwritten = False
             for k in nextInstructions:
                 op2 = readOperation(k)
                 ops2 = readOps(k[len(op2) + 1: ])
@@ -1366,7 +1367,6 @@ def optimiseWriteBeforeRead(code: list) -> list:
                         elif ops2[2] == ops[0]:
                             useful = True
                 # write ops
-                overwritten = False
                 if op2 not in ("JMP", "BGE", "BRL", "BRG", "BRE", "BNE", "BOD", "BEV", "BLE", "BRZ", "BNZ", "BRN", "BRP", "CAL", "RET", "HLT"):
                     if ops2[0] == ops[0]:
                         overwritten = True
