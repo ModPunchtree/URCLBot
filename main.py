@@ -57,7 +57,7 @@ async def on_message(message):
         
         await message.channel.send("Optimising...")
         try:
-            text = "\n".join(genericURCLoptimiser(message.content, int(BITS)))
+            text = "\n".join(genericURCLoptimiser(text, int(BITS)))
         except Exception as x:
             await message.channel.send("ERROR: \n" + str(x))
             return
