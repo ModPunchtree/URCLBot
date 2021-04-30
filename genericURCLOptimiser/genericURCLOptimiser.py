@@ -1095,7 +1095,7 @@ def constantFolding(code: list, BITS: int) -> list:
                     else:
                         code.pop(i)
                     return code
-            elif op == "BRL":
+            elif op == "BLE":
                 if ops[1][0].isnumeric() and ops[2][0].isnumeric():
                     if int(ops[1], 0) <= int(ops[2], 0):
                         code[i] = "JMP " + ops[0]
