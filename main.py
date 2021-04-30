@@ -74,16 +74,10 @@ async def on_message(message):
         text = message.content[5: ]
         text = text.split("\n")
         text = MPU6Transpile(text)
-        try:
-            await message.channel.send("```\n" +
-                                   text +
-                                   "```")
-        except Exception:
-            f = open("output.txt", "w")
-            f.write(text)
-            f.close()
-            await message.channel.send("Output too big! ;)")
-            await message.channel.send(file=discord.File("output.txt"))
+        f = open("output.txt", "w")
+        f.write(text)
+        f.close()
+        await message.channel.send(file=discord.File("output.txt"))
         return
 
     elif message.content.startswith("$URCL"):
@@ -95,16 +89,10 @@ async def on_message(message):
             await message.channel.send("ERROR: \n" + str(x))
             return
             
-        try:
-            await message.channel.send("```\n" +
-                                   text +
-                                   "```")
-        except Exception:
-            f = open("output.txt", "w")
-            f.write(text)
-            f.close()
-            await message.channel.send("Output too big! ;)")
-            await message.channel.send(file=discord.File("output.txt"))
+        f = open("output.txt", "w")
+        f.write(text)
+        f.close()
+        await message.channel.send(file=discord.File("output.txt"))
         return
     
     elif message.content.startswith("$optimise") or message.content.startswith("$optimize"):
