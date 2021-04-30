@@ -1,18 +1,8 @@
-$B
-auto x;
-auto y;
-auto z;
-auto a;
-auto b;
-auto c;
-x = 6;
-y = x;
-z = y;
-a = x;
-b = z;
-c = a;
-if (x == y && x == c) {
-   c = y;
-} else {
-  x = z;
-}
+$optimise
+IMM R1, 6
+IMM R2, 6
+IMM R3, 6
+IMM R4, 6
+IMM R5, 6
+IMM R6, 6
+SETE R7, 6, R2

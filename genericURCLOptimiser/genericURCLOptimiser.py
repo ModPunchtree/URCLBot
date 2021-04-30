@@ -1412,7 +1412,7 @@ def optimiseIMM(code: list) -> list:
                     if ops[0][0] == "R":
                         value = fetchValue(code, i, ops[0])
                         if value:
-                            code[i] = j.replace(ops[1], value)
+                            code[i] = j.replace(ops[0], value)
                             return code
                 if len(ops) == 2:
                     if ops[1][0] == "R":
@@ -1429,7 +1429,7 @@ def optimiseIMM(code: list) -> list:
                     if ops[2][0] == "R":
                         value = fetchValue(code, i, ops[2])
                         if value:
-                            code[i] = j.replace(ops[1], value)
+                            code[i] = j.replace(ops[2], value)
                             return code    
     return code
 

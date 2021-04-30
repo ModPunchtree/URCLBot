@@ -12,4 +12,4 @@ code = f.read()
 #code = code.split("\n")
 #print(MPU6Transpile(code))
 
-print(genericURCLoptimiser(compile(code[2: ], 8, 9), 8))
+print(genericURCLoptimiser(code, 8))
