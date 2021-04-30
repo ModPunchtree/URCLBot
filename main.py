@@ -49,9 +49,24 @@ async def on_message(message):
         else:
             BITS = "8"
             text = message.content[2:]
-        await message.channel.send("```\n" +
-                                   compile(text, int(BITS), int(text2)) +
-                                   "```")
+        try:
+            text = compile(text, int(BITS), int(text2))
+        except Exception as x:
+            await message.channel.send("ERROR: \n" + str(x))
+            return
+        
+        await message.channel.send("Optimising...")
+        try:
+            text = "\n".join(genericURCLoptimiser(message.content, int(BITS)))
+        except Exception as x:
+            await message.channel.send("ERROR: \n" + str(x))
+            return
+        f = open("output.txt", "w")
+        f.write(text)
+        f.close()
+        await message.channel.send(file=discord.File("output.txt"))
+        return
+        
         return
     
     elif message.content.startswith("$MPU6"):
