@@ -295,19 +295,19 @@ def singleInstructionOptimisations(code: list, BITS: int) -> list:
                 code[i] = "DEC " + ops[0] + ", " + ops[2]
                 return code
             elif ops[2] == "1":
-                code[i] == "INC " + ops[0] + ", " + ops[1]
+                code[i] = "INC " + ops[0] + ", " + ops[1]
                 return code
             elif ops[1] == "1":
-                code[i] == "INC " + ops[0] + ", " + ops[2]
+                code[i] = "INC " + ops[0] + ", " + ops[2]
                 return code
             elif (ops[2] == "0") or (ops[2] == "R0"):
-                code[i] == "MOV " + ops[0] + ", " + ops[1]
+                code[i] = "MOV " + ops[0] + ", " + ops[1]
                 return code
             elif (ops[1] == "0") or (ops[1] == "R0"):
-                code[i] == "MOV " + ops[0] + ", " + ops[2]
+                code[i] = "MOV " + ops[0] + ", " + ops[2]
                 return code
             elif ops[1] == ops[2]:
-                code[i] == "LSH " + ops[0] + ", " + ops[1]
+                code[i] = "LSH " + ops[0] + ", " + ops[1]
                 return code
             
         # 2  RSH   -> MOV, NOP

@@ -1,12 +1,3 @@
 $optimise
-.setup
-IMM R1, 0
-IMM R2, 1
-
-.fibonacciLoop
-ADD R1, R1, R2
-ADD R2, R1, R2
-JMP -2
-
-.end
-HLT
+IMM R1, 3
+ADD R1, R1, R1
