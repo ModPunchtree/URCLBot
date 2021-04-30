@@ -206,7 +206,7 @@ def relativesToLabels(code: list) -> list:
             while num > 0:
                 if not code[temp].startswith("."):
                     num -= 1
-                temp += 1
+                temp -= 1
             code.insert(temp, label)
             return relativesToLabels(code)
     return code

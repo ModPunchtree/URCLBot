@@ -1,11 +1,12 @@
-$optimise 8
+$optimise
+.setup
+IMM R1, 0
+IMM R2, 1
 
-JMP +2
+.fibonacciLoop
+ADD R1, R1, R2
+ADD R2, R1, R2
+JMP -2
 
-.unreachableCodeHere
-ADD R1, R2, R3
-
+.end
 HLT
-
-.unreachableCodeHereToo
-ADD R1, R2, R3
