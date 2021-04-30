@@ -709,9 +709,11 @@ def generateURCL(tokens_: list, tokenMap_: list, functions: list, variables_: li
                 squigglyStack.pop()
                 functionScope = squigglyStack[-1][0]
             elif squigglyStack[-1][0] in ["if", "elseif", "else"]:
-                if tokens[index + 1] in ["£elseif", "£else"]:
-                    pass
-                else:
+                skip = False
+                if len(tokens) != index + 1:
+                    if tokens[index + 1] in ["£elseif", "£else"]:
+                        skip = True
+                if skip == False:
                     num = str(lastCon() + 1)
                     output.append(".elseStart" + num)
                     num = str(lastIf())
@@ -735,4 +737,6 @@ def generateURCL(tokens_: list, tokenMap_: list, functions: list, variables_: li
         else:
             return "FATAL - Unrecognised token: " + token + "\n" + code[tokenMap[index] - 15: tokenMap[index] + 15] + "\n               ^"
     
+    if output[-1] != "HLT":
+        output.append("HLT")
     return output

@@ -38,7 +38,6 @@ def compile(raw: str, length: int, reg: int) -> str:
 
     output = headers(output, length)
 
-    output.append("HLT")
     output = "\n".join(output)
     return output
 
