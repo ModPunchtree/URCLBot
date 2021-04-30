@@ -172,6 +172,14 @@ def optimise(code: list, BITS: int) -> list:
     else:
         code = returnedCode
     
+    # unreachable code optimisation
+    oldCode = [i for i in code]
+    returnedCode = unreachableCode(code)
+    if oldCode != returnedCode:
+        return returnedCode
+    else:
+        code = returnedCode
+    
     # pre-execution optimisation #####################################################################
     
     
@@ -1308,4 +1316,15 @@ def POPPSH(code: list) -> list:
             code[i + 1] = "STR SP, " + code[i + 1][code[i + 1].index(" ") + 1: ]
             return POPPSH(code)
     return code
+
+def unreachableCode(code: list) -> list:
+    for i, j in enumerate(code[:-1]):
+        if j.startswith("JMP") or j.startswith("HLT"):
+            if not code[i + 1].startswith("."):
+                code.pop(i + 1)
+                return unreachableCode(code)
+    return code
+
+
+
 

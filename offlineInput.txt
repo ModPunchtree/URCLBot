@@ -1,3 +1,11 @@
 $optimise 8
-BRG +1, 10, 5
+
+JMP +2
+
+.unreachableCodeHere
+ADD R1, R2, R3
+
 HLT
+
+.unreachableCodeHereToo
+ADD R1, R2, R3
