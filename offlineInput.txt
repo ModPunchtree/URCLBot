@@ -1,7 +1,18 @@
 $B
-auto x = 69;
-if (x == 69) {
-  x = 2;
+auto x;
+auto y;
+auto z;
+auto a;
+auto b;
+auto c;
+x = 6;
+y = x;
+z = y;
+a = x;
+b = z;
+c = a;
+if (x == y && x == c) {
+   c = y;
 } else {
-  x = 6;
+  x = z;
 }

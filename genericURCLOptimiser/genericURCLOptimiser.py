@@ -1410,30 +1410,30 @@ def optimiseIMM(code: list) -> list:
             if op not in ("NOP", "IMM", "POP", "RET", "HLT"):
                 if len(ops) == 1:
                     if ops[0][0] == "R":
-                        value = fetchValue(code, i, ops)
+                        value = fetchValue(code, i, ops[0])
                         if value:
                             code[i] = j.replace(ops[1], value)
                             return code
                 if len(ops) == 2:
                     if ops[1][0] == "R":
-                        value = fetchValue(code, i, ops)
+                        value = fetchValue(code, i, ops[1])
                         if value:
                             code[i] = j.replace(ops[1], value)
                             return code
                 if len(ops) == 3:
                     if ops[1][0] == "R":
-                        value = fetchValue(code, i, ops)
+                        value = fetchValue(code, i, ops[1])
                         if value:
                             code[i] = j.replace(ops[1], value)
                             return code
                     if ops[2][0] == "R":
-                        value = fetchValue(code, i, ops)
+                        value = fetchValue(code, i, ops[2])
                         if value:
                             code[i] = j.replace(ops[1], value)
                             return code    
     return code
 
-def fetchValue(code: list, i: int, ops: tuple) -> str:
+def fetchValue(code: list, i: int, target) -> str:
     value = ""
     for k in code[: i][: : -1]:
         if k.startswith("."):
@@ -1441,8 +1441,8 @@ def fetchValue(code: list, i: int, ops: tuple) -> str:
         elif not k.startswith(("STR", "JMP", "BGE", "NOP", "BRL", "BRG", "BRE", "BNE", "BOD", "BEV", "BLE", "BRZ", "BNZ", "BRN", "BRP", "OUT", "PSH", "CAL", "RET", "HLT")):
             op2 = readOperation(k)
             ops2 = readOps(k[len(op2) + 1: ])
-            if ops2[0] == ops[1] and op2 != "IMM":
+            if ops2[0] == target and op2 != "IMM":
                 break
-            elif ops2[0] == ops[1] and op2 == "IMM":
+            elif ops2[0] == target and op2 == "IMM":
                 value = ops2[1]
     return value
