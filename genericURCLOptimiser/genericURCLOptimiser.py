@@ -191,6 +191,14 @@ def optimise(code: list, BITS: int) -> list:
     else:
         code = returnedCode
     
+    # optimise imm then read
+    oldCode = [i for i in code]
+    returnedCode = optimiseIMM(code)
+    if oldCode != returnedCode:
+        return returnedCode
+    else:
+        code = returnedCode
+    
     return code
 
 def relativesToLabels(code: list) -> list:
@@ -1394,4 +1402,47 @@ def deleteHeaders(code: list) -> list:
             return deleteHeaders(code)
     return code
 
+def optimiseIMM(code: list) -> list:
+    for i, j in enumerate(code):
+        if not j.startswith("."):
+            op = readOperation(j)
+            ops = readOps(j[len(op) + 1: ])
+            if op not in ("NOP", "IMM", "POP", "RET", "HLT"):
+                if len(ops) == 1:
+                    if ops[0][0] == "R":
+                        value = fetchValue(code, i, ops)
+                        if value:
+                            code[i] = j.replace(ops[1], value)
+                            return code
+                if len(ops) == 2:
+                    if ops[1][0] == "R":
+                        value = fetchValue(code, i, ops)
+                        if value:
+                            code[i] = j.replace(ops[1], value)
+                            return code
+                if len(ops) == 3:
+                    if ops[1][0] == "R":
+                        value = fetchValue(code, i, ops)
+                        if value:
+                            code[i] = j.replace(ops[1], value)
+                            return code
+                    if ops[2][0] == "R":
+                        value = fetchValue(code, i, ops)
+                        if value:
+                            code[i] = j.replace(ops[1], value)
+                            return code    
+    return code
 
+def fetchValue(code: list, i: int, ops: tuple) -> str:
+    value = ""
+    for k in code[: i][: : -1]:
+        if k.startswith("."):
+            break
+        elif not k.startswith(("STR", "JMP", "BGE", "NOP", "BRL", "BRG", "BRE", "BNE", "BOD", "BEV", "BLE", "BRZ", "BNZ", "BRN", "BRP", "OUT", "PSH", "CAL", "RET", "HLT")):
+            op2 = readOperation(k)
+            ops2 = readOps(k[len(op2) + 1: ])
+            if ops2[0] == ops[1] and op2 != "IMM":
+                break
+            elif ops2[0] == ops[1] and op2 == "IMM":
+                value = ops2[1]
+    return value

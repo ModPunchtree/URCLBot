@@ -1,8 +1,7 @@
 $B
-auto x;
-if (1) {
-    x = 2;
+auto x = 69;
+if (x == 69) {
+  x = 2;
 } else {
-    x = 6;
+  x = 6;
 }
-
