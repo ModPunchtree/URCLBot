@@ -1,4 +1,5 @@
 $optimise
+BITS == 8
 IMM R1, 0
 IMM R2, 1
 ADD R1, R2, R2

@@ -102,6 +102,9 @@ def genericURCLoptimiser(raw: str, BITS: int) -> list:
     # 3 delete empty lines
     code = list(filter(None, code))
     
+    # delete headers
+    code = deleteHeaders(code)
+    
     # 4 relatives to labels
     global uniqueNum; uniqueNum = 0
     code = relativesToLabels(code)
@@ -1384,6 +1387,11 @@ def findMINREG(code: list) -> int:
             code[i] = j.replace("R", "#", 1)
     return MINREG
 
-
+def deleteHeaders(code: list) -> list:
+    for i, j in enumerate(code):
+        if j.startswith(("BITS", "MINREG", "MINRAM", "MINSTACK", "RUN")):
+            code.pop(i)
+            return deleteHeaders(code)
+    return code
 
 
