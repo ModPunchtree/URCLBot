@@ -1,18 +1,16 @@
-$B 8, 8
-auto x;
-auto y;
-auto z;
-auto a;
-auto b;
-auto c;
-x = 6;
-y = x;
-z = y;
-a = x;
-b = z;
-c = a;
-if (x == y && x == c) {
-   c = y;
-} else {
-  x = z;
+$B 8, 9
+auto a = 0;
+auto b = 1;
+auto answer;
+while (1) {
+    a += b;
+    answer = (128 / b) * a;
+    asm {
+        OUT %8SEG, answer;
+    }
+    b += a;
+    answer = (128 / a) * b;
+    asm {
+        OUT %8SEG, answer;
+    }
 }

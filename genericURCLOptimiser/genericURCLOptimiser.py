@@ -958,6 +958,14 @@ def singleInstructionOptimisations(code: list, BITS: int) -> list:
                 code.pop(i)
                 return code
         
+        # 51 IN    -> 
+        elif op == "IN":
+            pass
+        
+        # 52 OUT   -> 
+        elif op == "OUT":
+            pass
+        
         elif op.startswith("."):
             pass
         
