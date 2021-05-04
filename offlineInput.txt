@@ -1,16 +1,88 @@
 $B 8, 9
-auto a = 0;
-auto b = 1;
-auto answer;
-while (1) {
-    a += b;
-    answer = (128 / b) * a;
-    asm {
-        OUT %8SEG, answer;
+auto a = 233;
+auto b = 144;
+auto answerLow;
+auto answerHigh;
+auto remainderHigh;
+auto remainderLow;
+auto base10AnswerLow;
+auto base10AnswerHigh;
+
+answerHigh = 128 / b;
+remainderHigh = 128 % b;
+answerLow = 0;
+while (remainderHigh > 0) {
+    remainderHigh -= 1;
+    remainderLow -= b;
+    answerLow = (remainderLow / b) + 1;
+    remainderLow %= b;
+}
+
+auto i = 2;
+while (i > 0) {
+    if (answerHigh % 2 == 1) {
+        answerLow = (answerLow >> 1) + 128;
+    } else {
+        answerLow >>= 1;
     }
-    b += a;
-    answer = (128 / a) * b;
-    asm {
-        OUT %8SEG, answer;
+    answerHigh >>= 1;
+    i -= 1;
+}
+base10AnswerLow = answerLow;
+base10AnswerHigh = answerHigh;
+
+i = 3;
+while (i > 0) {
+    if (answerHigh % 2 == 1) {
+        answerLow = (answerLow >> 1) + 128;
+    } else {
+        answerLow >>= 1;
     }
+    answerHigh >>= 1;
+    i -= 1;
+}
+if ((base10AnswerLow + answerLow < base10AnswerLow) | (base10AnswerLow + answerLow < answerLow)) {
+    base10AnswerHigh += answerHigh + 1;
+} else {
+    base10AnswerLow += answerHigh;
+}
+base10AnswerLow += answerLow;
+
+i = 2;
+while (i > 0) {
+    if (answerHigh % 2 == 1) {
+        answerLow = (answerLow >> 1) + 128;
+    } else {
+        answerLow >>= 1;
+    }
+    answerHigh >>= 1;
+    if ((base10AnswerLow + answerLow < base10AnswerLow) | (base10AnswerLow + answerLow < answerLow)) {
+        base10AnswerHigh += answerHigh + 1;
+    } else {
+        base10AnswerLow += answerHigh;
+    }
+    base10AnswerLow += answerLow;
+    i -= 1;
+}
+
+i = 4;
+while (i > 0) {
+    if (answerHigh % 2 == 1) {
+        answerLow = (answerLow >> 1) + 128;
+    } else {
+        answerLow >>= 1;
+    }
+    answerHigh >>= 1;
+    i -= 1;
+}
+if ((base10AnswerLow + answerLow < base10AnswerLow) | (base10AnswerLow + answerLow < answerLow)) {
+    base10AnswerHigh += answerHigh + 1;
+} else {
+    base10AnswerLow += answerHigh;
+}
+base10AnswerLow += answerLow;
+
+asm {
+    OUT %8SEG, base10AnswerLow;
+    OUT %8SEG, base10AnswerHigh;
 }

@@ -618,10 +618,10 @@ def singleInstructionOptimisations(code: list, BITS: int) -> list:
                 code[i] = "JMP " + ops[0]
                 return code
             elif ops[1] == "0" or ops[1] == "R0":
-                code[i] = "BRZ " + ops[0] + ", " + ops[2]
+                code[i] = "JMP " + ops[0]
                 return code
             elif ops[2] == "0" or ops[2] == "R0":
-                code[i] = "JMP " + ops[0]
+                code[i] = "BRZ " + ops[0] + ", " + ops[1]
                 return code
             elif ops[1] == "1":
                 code[i] = "BNZ " + ops[0] + ", " + ops[2]
