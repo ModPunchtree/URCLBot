@@ -506,7 +506,7 @@ def fetch(operand: str, op: str, absMem: bool = False) -> int:
         num = int(operand[1:])
         return registers[num]
     elif operand.startswith("M"):
-        num = int(operand[1:])
+        num = int(operand[1:], 0)
         return memory[num + M0]
     elif operand.startswith("%"):
         if offline:
