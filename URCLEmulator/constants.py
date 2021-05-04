@@ -62,7 +62,7 @@ def validOpTypes() -> tuple:
     BZN = (eighteen, four)
     BRN = (eighteen, four)
     BRP = (eighteen, four)
-    IN = (nineteen)
+    IN = (nineteen,)
     OUT = (twenty, twentyone)
     PSH = (eleven, ten)
     POP = (eleven,)
