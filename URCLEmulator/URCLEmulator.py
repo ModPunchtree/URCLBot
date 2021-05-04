@@ -2,8 +2,9 @@
 from URCLEmulator.constants import alpha
 from URCLEmulator.constants import fetchNone, fetchOne, fetchOneTwo, fetchOneTwoThree, fetchTwo, fetchTwoThree, numberOfOps, urcl, validOpTypes
 
-def emulate(raw: str) -> str:
-    
+def emulate(raw: str, connection: bool = False) -> str:
+    global offline
+    offline = connection
     # pre-process
     # 1 remove spaces
     # 2 remove line comments
@@ -490,6 +491,7 @@ def fetchOps(op: str, ops: tuple) -> tuple:
 
 def fetch(operand: str, op: str, absMem: bool = False) -> int:
     global SP
+    global warnings
     if op in ("POP", "RET"):
         temp = fetch(str(SP), "LOD", True)
         SP += 1
@@ -507,8 +509,11 @@ def fetch(operand: str, op: str, absMem: bool = False) -> int:
         num = int(operand[1:])
         return memory[num + M0]
     elif operand.startswith("%"):
-        warnings += ("IN instruction tried to fetch value from port: " + operand + "\nThis emulator does not support ports so it returned 0 instead.",)
-        return 0
+        if offline:
+            return int(input("Type value for port " + operand + ": "), 0)
+        else:
+            warnings += ("IN instruction tried to fetch value from port: " + operand + "\nThis emulator does not support ports so it returned 0 instead.",)
+            return 0
     elif operand[0].isnumeric() and absMem:
         num = int(operand, 0)
         return memory[num]
