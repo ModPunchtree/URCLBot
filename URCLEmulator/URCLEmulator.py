@@ -203,7 +203,7 @@ def emulate(raw: str) -> str:
               "\n\nMemory:    (M0 = " + str(M0) + ")\n" +
               "\n".join(filter(None, ["M" + str(i - M0) + ": " + str(j) if uninitialisedMem[i] and type(j) != str and i >= M0 else "" for i, j in enumerate(memory)])) +
               "\n\nOutput:\n" +
-              ", ".join([str(i) for i in outputList]))
+              ", ".join(["0x" + hex(i)[2:].upper() for i in outputList]))
     
     # return warnings + all registers/initialised memory + outputList
     return ("\n".join(["WARNING - " + i for i in warnings]) + 
@@ -216,7 +216,7 @@ def emulate(raw: str) -> str:
             "\n\nMemory:    (M0 = " + str(M0) + ")\n" +
             "\n".join(filter(None, ["M" + str(i - M0) + ": " + str(j) if uninitialisedMem[i] and type(j) != str and i >= M0 else "" for i, j in enumerate(memory)])) +
             "\n\nOutput:\n" +
-            ", ".join([str(i) for i in outputList]))
+            ", ".join(["0x" + hex(i)[2:].upper() for i in outputList]))
 
 ################################################
 
@@ -399,12 +399,14 @@ def uninitialisedFetch(op: str, ops: tuple, opTypes: tuple, uninitialisedReg: li
             num = int(ops[1])
         elif ops[1] == "SP":
             num = 0
+        elif ops[1][0].isnumeric():
+            num = int(ops[1], 0)
         else:
-            num = int(ops[1][1:])
+            num = int(ops[1][1:], 0)
         if opTypes[1] == "REG":
             temp = uninitialisedReg[num]
         elif opTypes[1] == "MEM":
-            temp = not uninitialisedMemory[num]
+            temp = not uninitialisedMemory[num + M0]
     
     elif op in ("BGR", "BRL", "BRG", "BRE", "BNE", "BLE"):
         if ops[0].isnumeric():
@@ -510,8 +512,8 @@ def fetch(operand: str, op: str, absMem: bool = False) -> int:
     elif operand[0].isnumeric() and absMem:
         num = int(operand, 0)
         return memory[num]
-    elif operand.isnumeric():
-        return int(operand)
+    elif operand[0].isnumeric():
+        return int(operand, 0)
     else:
         raise Exception("FATAL - Invalid fetch location: " + operand)
 
