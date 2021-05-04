@@ -122,7 +122,7 @@ def emulate(raw: str) -> str:
     # 7 PC = 0, R0 = 0, branch = False, ect.
     global PC; PC = 0
     global branch; branch = False
-    cycleLimit = 1000
+    cycleLimit = 100
     totalCycles = 0
     global warnings; warnings = ()
     global outputList; outputList = []
@@ -473,6 +473,8 @@ def fetchOps(op: str, ops: tuple) -> tuple:
         return ("", fetch(ops[1], op), fetch(ops[2], op))
     elif fetchOneTwoThree(op):
         return (fetch(ops[0], op), fetch(ops[1], op), fetch(ops[2], op))
+    elif op == "LOD":
+        return ("", fetch(ops[1], op, True))
     elif fetchTwo(op):
         return ("", fetch(ops[1], op))
     elif fetchOneTwo(op):
@@ -505,8 +507,8 @@ def fetch(operand: str, op: str, absMem: bool = False) -> int:
     elif operand.startswith("%"):
         warnings += ("IN instruction tried to fetch value from port: " + operand + "\nThis emulator does not support ports so it returned 0 instead.",)
         return 0
-    elif operand.isnumeric() and absMem:
-        num = int(operand)
+    elif operand[0].isnumeric() and absMem:
+        num = int(operand, 0)
         return memory[num]
     elif operand.isnumeric():
         return int(operand)
@@ -812,11 +814,11 @@ def write(location: str, value: int) -> None:
         registers[num] = value
         uninitialisedReg[num] = False
     elif location.startswith("M"):
-        num = int(location[1:])
+        num = int(location[1:], 0)
         memory[num + M0] = value
         uninitialisedMem[num] = True
-    elif location.isnumeric():
-        num = int(location)
+    elif location[0].isnumeric():
+        num = int(location, 0)
         memory[num] = value
         uninitialisedMem[num] = True
     elif location == "PC":

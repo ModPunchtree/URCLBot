@@ -30,7 +30,7 @@ def validOpTypes() -> tuple:
     
     ADD = (one, two, seventeen, three)
     RSH = (four, five)
-    LOD = (six, four, seven)
+    LOD = (six, four, seven, five)
     STR = (eight, four, nine, five, eighteen, twentytwo)
     JMP = (ten, eleven)
     BGE = (twelve, thirteen, fourteen, one, two, seventeen)

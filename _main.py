@@ -12,5 +12,7 @@ code = f.read()
 #code = code.split("\n")
 #print(MPU6Transpile(code))
 
-print(compile(code[7:], 8, 9))
-print(genericURCLoptimiser(compile(code[7:], 8, 9), 8))
+#print(compile(code[7:], 8, 9))
+#print(genericURCLoptimiser(compile(code[7:], 8, 9), 8))
+
+print(emulate(code[5: ]))
