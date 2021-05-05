@@ -118,7 +118,10 @@ def emulate(raw: str, connection: bool = False) -> str:
     # 6 put DW values into memory
     for i, j in enumerate(code):
         if j.startswith("DW"):
-            memory[i] = int(j[2:], 0)
+            if j[2: ].startswith("M"):
+                memory[i] = M0 + int(j[3: ], 0)
+            else:
+                memory[i] = int(j[2:], 0)
     
     # 7 PC = 0, R0 = 0, branch = False, ect.
     global PC; PC = 0
