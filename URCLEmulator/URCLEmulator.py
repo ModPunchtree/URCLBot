@@ -520,6 +520,10 @@ def fetch(operand: str, op: str, absMem: bool = False) -> int:
         return PC
     elif operand == "SP":
         return SP
+    elif op == "LOD" and operand.startswith("R"):
+        num = int(operand[1:])
+        num = registers[num]
+        return memory[num]
     elif op == "IMM" and operand[0] == "M":
         return int(operand[1: ], 0) + M0
     elif operand.startswith("R"):
