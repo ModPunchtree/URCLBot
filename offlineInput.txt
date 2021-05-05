@@ -2,8 +2,7 @@ $URCL
 BITS == 16
 MINREG 2
 MINRAM 65535
-JMP .label
-.test
-DW M0
-.label
-LOD R1, .test
+STR M0, 0x6C
+STR M1, 0
+STR M2, 0
+STR M3, 0x200

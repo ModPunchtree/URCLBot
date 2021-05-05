@@ -110,8 +110,8 @@ def emulate(raw: str, connection: bool = False) -> str:
     resolveRelatives()
     
     # 5 put code in ram, then set M0 offset
-    putCodeInRAM()
     global M0; M0 = len(code)
+    putCodeInRAM()
     global uninitialisedMem
     uninitialisedMem = [True if i < len(code) else False for i in range(len(memory))]
     
@@ -305,7 +305,22 @@ def resolveRelatives() -> None:
 
 def putCodeInRAM() -> None:
     for i in range(len(code)):
-        memory[i] = code[i]
+        while code[i].find("M") != -1:
+            if code[i][code[i].find("M") + 1].isnumeric():
+                num = readNum(code[i][code[i].find("M") + 1: ])
+                code[i] = code[i].replace("M" + str(num), str(num + M0), 1)
+            else:
+                code[i] = code[i].replace("M", "#", 1)
+        memory[i] = code[i].replace("#", "M")
+
+def readNum(text: str) -> int:
+    answer = ""
+    for i in text:
+        if i.isnumeric() or i == "x":
+            answer += i
+        else:
+            return int(answer, 0)
+    return int(answer, 0)
 
 def fetchInstruction(instruction: str) -> None:
     if instruction[: 5] in urcl():
