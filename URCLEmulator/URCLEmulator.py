@@ -362,8 +362,8 @@ def invalidOpTypes(op: str, opTypes: tuple) -> bool:
 def uninitialisedFetch(op: str, ops: tuple, opTypes: tuple, uninitialisedReg: list, uninitialisedMemory: list) -> bool:
     temp = False
     if (len(ops) == 1) and (op != "POP"):
-        if ops[0].isnumeric():
-            num = int(ops[0])
+        if ops[0][0].isnumeric():
+            num = int(ops[0], 0)
         elif ops[0] == "SP":
             num = 0
         else:
@@ -374,8 +374,8 @@ def uninitialisedFetch(op: str, ops: tuple, opTypes: tuple, uninitialisedReg: li
             temp = not uninitialisedMemory[num]
 
     elif op in ("BOD", "BEV", "BRZ", "BZR", "BNZ", "BZN", "BRN", "BRP"):
-        if ops[0].isnumeric():
-            num = int(ops[0])
+        if ops[0][0].isnumeric():
+            num = int(ops[0], 0)
         elif ops[0] == "SP":
             num = 0
         else:
@@ -384,8 +384,8 @@ def uninitialisedFetch(op: str, ops: tuple, opTypes: tuple, uninitialisedReg: li
             temp = uninitialisedReg[num]
         elif opTypes[0] == "MEM":
             temp = not uninitialisedMemory[num]
-        if ops[1].isnumeric():
-            num = int(ops[1])
+        if ops[1][0].isnumeric():
+            num = int(ops[1], 0)
         elif ops[1] == "SP":
             num = 0
         else:
@@ -410,8 +410,8 @@ def uninitialisedFetch(op: str, ops: tuple, opTypes: tuple, uninitialisedReg: li
             temp = not uninitialisedMemory[num + M0]
     
     elif op in ("BGR", "BRL", "BRG", "BRE", "BNE", "BLE"):
-        if ops[0].isnumeric():
-            num = int(ops[0])
+        if ops[0][0].isnumeric():
+            num = int(ops[0], 0)
         elif ops[0] == "SP":
             num = 0
         else:
@@ -420,8 +420,8 @@ def uninitialisedFetch(op: str, ops: tuple, opTypes: tuple, uninitialisedReg: li
             temp = uninitialisedReg[num]
         elif opTypes[0] == "MEM":
             temp = not uninitialisedMemory[num]
-        if ops[1].isnumeric():
-            num = int(ops[1])
+        if ops[1][0].isnumeric():
+            num = int(ops[1], 0)
         elif ops[1] == "SP":
             num = 0
         else:
@@ -430,8 +430,8 @@ def uninitialisedFetch(op: str, ops: tuple, opTypes: tuple, uninitialisedReg: li
             temp = uninitialisedReg[num] or temp
         elif opTypes[1] == "MEM":
             temp = not uninitialisedMemory[num] or temp
-        if ops[2].isnumeric():
-            num = int(ops[2])
+        if ops[2][0].isnumeric():
+            num = int(ops[2], 0)
         elif ops[2] == "SP":
             num = 0
         else:
