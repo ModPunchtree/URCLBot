@@ -38,7 +38,7 @@ def validOpTypes() -> tuple:
     SUB = (one, two, seventeen, three)
     MOV = (four, five)
     NOP = (twentythree,)
-    IMM = (five,)
+    IMM = (five, six)
     LSH = (four, five)
     INC = (four, five)
     DEC = (four, five)

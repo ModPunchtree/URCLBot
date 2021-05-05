@@ -123,7 +123,7 @@ def emulate(raw: str, connection: bool = False) -> str:
     # 7 PC = 0, R0 = 0, branch = False, ect.
     global PC; PC = 0
     global branch; branch = False
-    cycleLimit = 100
+    cycleLimit = 1000
     totalCycles = 0
     global warnings; warnings = ()
     global outputList; outputList = []
@@ -502,6 +502,8 @@ def fetch(operand: str, op: str, absMem: bool = False) -> int:
         return PC
     elif operand == "SP":
         return SP
+    elif op == "IMM" and operand[0] == "M":
+        return int(operand[1: ], 0) + M0
     elif operand.startswith("R"):
         num = int(operand[1:])
         return registers[num]
