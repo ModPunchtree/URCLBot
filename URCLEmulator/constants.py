@@ -1,9 +1,9 @@
 
 def urcl() -> tuple:
-    return ("ADD", "RSH", "LOD", "STR", "JMP", "BGE", "NOR", "SUB", "MOV", "NOP", "IMM", "LSH", "INC", "DEC", "NEG", "AND", "OR", "NOT", "XNOR", "XOR", "NAND", "BRL", "BRG", "BRE", "BNE", "BOD", "BEV", "BLE", "BRZ", "BZR", "BNZ", "BZN", "BRN", "BRP", "IN", "OUT", "PSH", "POP", "CAL", "RET", "HLT", "MLT", "DIV", "MOD", "BSR", "BSL", "SRS", "BSS", "SETE", "SETNE", "SETG", "SETL", "SETGE", "SETLE")
+    return ("ADD", "RSH", "LOD", "STR", "JMP", "BGE", "NOR", "SUB", "MOV", "NOP", "IMM", "LSH", "INC", "DEC", "NEG", "AND", "OR", "NOT", "XNOR", "XOR", "NAND", "BRL", "BRG", "BRE", "BNE", "BOD", "BEV", "BLE", "BRZ", "BZR", "BNZ", "BZN", "BRN", "BRP", "IN", "OUT", "PSH", "POP", "CAL", "RET", "HLT", "MLT", "DIV", "MOD", "BSR", "BSL", "SRS", "BSS", "SETE", "SETNE", "SETG", "SETL", "SETGE", "SETLE", "LLOD", "LSTR")
 
 def numberOfOps() -> tuple:
-    return ( 3,     2,     2,     2,     1,     3,     3,     3,     2,     0,     2,     2,     2,     2,     2,     3,     3,    3,     3,      3,     3,      3,     3,     3,     3,     2,     2,     3,     2,     2,     2,     2,     2,     2,     2,    2,     1,     1,     1,     0,     0,     3,     3,     3,     3,     3,     2,     3,     3,      3,       3,      3,      3,       3)
+    return ( 3,     2,     2,     2,     1,     3,     3,     3,     2,     0,     2,     2,     2,     2,     2,     3,     3,    3,     3,      3,     3,      3,     3,     3,     3,     2,     2,     3,     2,     2,     2,     2,     2,     2,     2,    2,     1,     1,     1,     0,     0,     3,     3,     3,     3,     3,     2,     3,     3,      3,       3,      3,      3,       3,       3,      3)
 
 def validOpTypes() -> tuple:
     one = ("REG", "REG", "REG")
@@ -20,6 +20,7 @@ def validOpTypes() -> tuple:
     twelve = ("IMM", "REG", "REG")
     thirteen = ("IMM", "REG", "IMM")
     fourteen = ("IMM", "IMM", "REG")
+    fifthteen = ("IMM", "IMM", "IMM")
     seventeen = ("REG", "IMM", "REG")
     eighteen = ("IMM", "REG")
     nineteen = ("REG", "PORT")
@@ -27,6 +28,12 @@ def validOpTypes() -> tuple:
     twentyone = ("PORT", "IMM")
     twentytwo = ("IMM", "IMM")
     twentythree = ()
+    twentyfour = ("REG", "MEM", "REG")
+    twentyfive = ("REG", "MEM", "IMM")
+    twentysix = ("MEM", "REG", "REG")
+    twentyseven = ("MEM", "REG", "IMM")
+    twentyeight = ("MEM", "IMM", "REG")
+    twentynine = ("MEM", "IMM", "IMM")
     
     ADD = (one, two, seventeen, three)
     RSH = (four, five)
@@ -82,16 +89,23 @@ def validOpTypes() -> tuple:
     SETL = (one, two, seventeen)
     SETGE = (one, two, seventeen)
     SETLE = (one, two, seventeen)
+    LLOD = (one, two, seventeen, three, twentyfour, twentyfive)
+    LSTR = (one, two, seventeen, three, twentysix, twentyseven, twentyeight, twentynine, twelve, thirteen, fourteen, fifthteen)
 
-    return (ADD, RSH, LOD, STR, JMP, BGE, NOR, SUB, MOV, NOP, IMM, LSH, INC, DEC, NEG, AND, OR, NOT, XNOR, XOR, NAND, BRL, BRG, BRE, BNE, BOD, BEV, BLE, BRZ, BZR, BNZ, BZN, BRN, BRP, IN, OUT, PSH, POP, CAL, RET, HLT, MLT, DIV, MOD, BSR, BSL, SRS, BSS, SETE, SETNE, SETG, SETL, SETGE, SETLE)
+    return (ADD, RSH, LOD, STR, JMP, BGE, NOR, SUB, MOV, NOP, IMM, LSH, INC, DEC, NEG, AND, OR, NOT, XNOR, XOR, NAND, BRL, BRG, BRE, BNE, BOD, BEV, BLE, BRZ, BZR, BNZ, BZN, BRN, BRP, IN, OUT, PSH, POP, CAL, RET, HLT, MLT, DIV, MOD, BSR, BSL, SRS, BSS, SETE, SETNE, SETG, SETL, SETGE, SETLE, LLOD, LSTR)
 
 def fetchTwoThree(op: str) -> bool:
-    if op in ("ADD", "NOR", "SUB", "AND", "OR", "NOT", "XNOR", "XOR", "NAND", "MLT", "DIV", "MOD", "BSR", "BSL", "BSS", "SETE", "SETNE", "SETG", "SETL", "SETGE", "SETLE"):
+    if op in ("ADD", "NOR", "SUB", "AND", "OR", "NOT", "XNOR", "XOR", "NAND", "MLT", "DIV", "MOD", "BSR", "BSL", "BSS", "SETE", "SETNE", "SETG", "SETL", "SETGE", "SETLE", "LLOD"):
         return True
     return False
 
 def fetchOneTwoThree(op: str) -> bool:
     if op in ("BGE", "BRL", "BRG", "BRE", "BNE", "BLE"):
+        return True
+    return False
+
+def fetchThree(op: str) -> bool:
+    if op == "LSTR":
         return True
     return False
 

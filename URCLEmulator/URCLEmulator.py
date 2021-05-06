@@ -1,5 +1,5 @@
 
-from URCLEmulator.constants import alpha
+from URCLEmulator.constants import alpha, fetchThree
 from URCLEmulator.constants import fetchNone, fetchOne, fetchOneTwo, fetchOneTwoThree, fetchTwo, fetchTwoThree, numberOfOps, urcl, validOpTypes
 
 def emulate(raw: str, connection: bool = False) -> str:
@@ -490,7 +490,11 @@ def writingToR0(ops: tuple) -> bool:
     return False
 
 def fetchOps(op: str, ops: tuple) -> tuple:
-    if fetchTwoThree(op):
+    if op == "LLOD":
+        return ("", fetch(str(fetch(ops[1], op) + fetch(ops[2], op)), op, True))
+    elif fetchThree(op):
+        return ("", "", fetch(ops[2], op))
+    elif fetchTwoThree(op):
         return ("", fetch(ops[1], op), fetch(ops[2], op))
     elif fetchOneTwoThree(op):
         return (fetch(ops[0], op), fetch(ops[1], op), fetch(ops[2], op))
@@ -699,6 +703,10 @@ def doOperation(op: str, fetchList: tuple) -> int:
         if fetchList[1] <= fetchList[2]:
             return 1
         return 0
+    elif op == "LLOD":
+        return fetchList[1]
+    elif op == "LSTR":
+        return fetchList[2]
     else:
         raise Exception("FATAL - Invalid operation: " + op)
 
@@ -833,6 +841,22 @@ def writeResult(op: str, result: int, ops: tuple, fetchList: tuple) -> None:
         write(ops[0], result)
     elif op == "SETLE":
         write(ops[0], result)
+    elif op == "LLOD":
+        write(ops[0], result)
+    elif op == "LSTR":
+        if ops[0][0].isnumeric():
+            base = int(ops[0], 0)
+        elif ops[0][0] == "R":
+            base = fetch(ops[0], op)
+        else:
+            base = int(ops[0][1:], 0)
+        if ops[1][0].isnumeric():
+            offset = int(ops[1], 0)
+        elif ops[1][0] == "R":
+            offset = fetch(ops[1], op)
+        else:
+            offset = int(ops[1][1:], 0)
+        write(str(base + offset), result)
     else:
         raise Exception("FATAL - Invalid operation: " + op)
 
