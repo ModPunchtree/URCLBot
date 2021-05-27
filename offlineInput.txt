@@ -1,4 +1,16 @@
 $URCL
-MINREG 2
-IMM R1, M0
-STR R1, R1
+STR M0, 0x69
+JMP .Stuff
+.Yourmom
+DW 0
+DW 0
+
+.Stuff
+LOD R2, M0
+OUT %TEXT, R2
+IMM R1, .Yourmom
+STR R1, R2
+LOD R3, .Yourmom
+OUT %TEXT, R3
+HLT
+

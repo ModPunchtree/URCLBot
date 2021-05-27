@@ -728,6 +728,8 @@ def writeResult(op: str, result: int, ops: tuple, fetchList: tuple) -> None:
     elif op == "STR":
         if ops[0] == "SP":
             write(str(SP), result)
+        elif ops[0].startswith("R"):
+            write(str(fetch(ops[0], op, True)), result)
         else:
             write(ops[0], result)
     elif op == "JMP":
