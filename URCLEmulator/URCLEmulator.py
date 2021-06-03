@@ -209,7 +209,7 @@ def emulate(raw: str, connection: bool = False) -> str:
               "\n\nRaw Output:\n" +
               ", ".join(["0x" + hex(i)[2:].upper() for i in outputList]) +
               "\n\nAscii Output:\n" +
-              ", ".join([chr(i) for i in outputList]))
+              "".join([chr(i) for i in outputList]))
     
     # return warnings + all registers/initialised memory + outputList
     return ("\n".join(["WARNING - " + i for i in warnings]) + 
@@ -224,7 +224,7 @@ def emulate(raw: str, connection: bool = False) -> str:
             "\n\nOutput:\n" +
             ", ".join(["0x" + hex(i)[2:].upper() for i in outputList]) +
             "\n\nAscii Output:\n" +
-            ", ".join([chr(i) for i in outputList]))
+            "".join([chr(i) for i in outputList]))
 
 ################################################
 
