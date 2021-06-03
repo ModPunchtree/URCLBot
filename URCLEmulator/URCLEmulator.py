@@ -544,8 +544,8 @@ def fetch(operand: str, op: str, absMem: bool = False) -> int:
         if offline:
             while True:
                 num = input("Type value for port " + operand + ": ")
-                if num.isnumeric() or (num.startswith("'") and num.endswith("'")) or num[2:].isnumeric() or len(num) == 1:
-                    if num.isnumeric() or num[2:].isnumeric():
+                if num.isnumeric() or (num.startswith("'") and num.endswith("'")) or num.startswith("0x") or num.startswith("0b") or len(num) == 1:
+                    if num.isnumeric() or num.startswith("0x") or num.startswith("0b"):
                         num2 = int(num, 0)
                         break
                     elif num.startswith("'") and num.endswith("'"):
