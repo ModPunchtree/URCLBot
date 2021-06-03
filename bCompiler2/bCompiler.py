@@ -27,10 +27,10 @@ def bCompiler2(raw: str) -> str:
     tokens, tokenMap = tokenise(code)
 
     # 2: Preprocess
-    variables, lists, functions, tokens, tokenMap = preprocess(tokens, tokenMap, code, BITS)
+    variables, arrays, functions, tokens, tokenMap = preprocess(tokens, tokenMap, code, BITS)
 
     # 3: Reverse Polish
-    tokens, tokenMap = reversePolish(variables, lists, functions, tokens, tokenMap)
+    tokens, tokenMap = reversePolish(variables, arrays, functions, tokens, tokenMap)
 
     return tokens
 

@@ -21,7 +21,7 @@
 
 # 4: Generate URCL
     # 1: traverse tokens left to right, converting to URCL
-    # 2: return URCL code as a list with markers for tempary variables
+    # 2: return URCL code as a list with markers for temporary variables
 
 # 5: Compiler Optimisations
     # 1: optimise temporary variables

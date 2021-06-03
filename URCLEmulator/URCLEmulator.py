@@ -206,8 +206,10 @@ def emulate(raw: str, connection: bool = False) -> str:
               "\n".join(["R" + str(i) + ": " + str(j) for i, j in enumerate(registers)][1:]) +
               "\n\nMemory:    (M0 = " + str(M0) + ")\n" +
               "\n".join(filter(None, ["M" + str(i - M0) + ": " + str(j) if uninitialisedMem[i] and type(j) != str and i >= M0 else "" for i, j in enumerate(memory)])) +
-              "\n\nOutput:\n" +
-              ", ".join(["0x" + hex(i)[2:].upper() for i in outputList]))
+              "\n\nRaw Output:\n" +
+              ", ".join(["0x" + hex(i)[2:].upper() for i in outputList]) +
+              "\n\nAscii Output:\n" +
+              ", ".join([chr(i) for i in outputList]))
     
     # return warnings + all registers/initialised memory + outputList
     return ("\n".join(["WARNING - " + i for i in warnings]) + 
@@ -220,7 +222,9 @@ def emulate(raw: str, connection: bool = False) -> str:
             "\n\nMemory:    (M0 = " + str(M0) + ")\n" +
             "\n".join(filter(None, ["M" + str(i - M0) + ": " + str(j) if uninitialisedMem[i] and type(j) != str and i >= M0 else "" for i, j in enumerate(memory)])) +
             "\n\nOutput:\n" +
-            ", ".join(["0x" + hex(i)[2:].upper() for i in outputList]))
+            ", ".join(["0x" + hex(i)[2:].upper() for i in outputList]) +
+            "\n\nAscii Output:\n" +
+            ", ".join([chr(i) for i in outputList]))
 
 ################################################
 
@@ -538,7 +542,27 @@ def fetch(operand: str, op: str, absMem: bool = False) -> int:
         return memory[num + M0]
     elif operand.startswith("%"):
         if offline:
-            return int(input("Type value for port " + operand + ": "), 0)
+            while True:
+                num = input("Type value for port " + operand + ": ")
+                if num.isnumeric() or (num.startswith("'") and num.endswith("'")) or num[2:].isnumeric() or len(num) == 1:
+                    if num.isnumeric() or num[2:].isnumeric():
+                        num2 = int(num, 0)
+                        break
+                    elif num.startswith("'") and num.endswith("'"):
+                        try:
+                            num2 = ord(num[1])
+                            break
+                        except:
+                            pass
+                    else:
+                        try:
+                            num2 = ord(num)
+                            break
+                        except:
+                            pass
+                else:
+                    print("Invalid input try again")
+            return num2
         else:
             warnings += ("IN instruction tried to fetch value from port: " + operand + "\nThis emulator does not support ports so it returned 0 instead.",)
             return 0

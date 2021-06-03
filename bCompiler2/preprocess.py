@@ -1,7 +1,7 @@
 
 # 1: check brackets match
 # 2: check for ;
-# 3: find variables (including lists) and functions
+# 3: find variables (including arrays) and functions
 # 4: check for undefined identifers
 # 5: convert +/-/&/*/auto * into something unambiguous
 # 6: convert (auto) and (auto*) into something unambiguous
@@ -17,13 +17,13 @@ def preprocess(tokens: list, tokenMap: list, code: str, BITS: int) -> tuple:
     if semicolonMissing(tokens, tokenMap):
         raise Exception("FATAL - Missing ; in code:\n" + code[int(semicolonMissing(tokens, tokenMap)) - 15: int(semicolonMissing(tokens, tokenMap)) + 15] + "\n" + " "*15 + "^")
 
-    # 3: find variables (including lists) and functions
+    # 3: find variables (including arrays) and functions
     global variables
-    variables, lists, functions = findIdentifiers(tokens, tokenMap)
+    variables, arrays, functions = findIdentifiers(tokens, tokenMap)
     
     # 4: check for undefined identifers
-    if undefinedIdentifier(tokens, tokenMap, variables, lists, functions):
-        raise Exception("FATAL - Unrecognised identifer:\n" + code[int(undefinedIdentifier(tokens, tokenMap, variables, lists, functions)) - 15: int(undefinedIdentifier(tokens, tokenMap, variables, lists, functions)) + 15] + "\n" + " "*15 + "^")
+    if undefinedIdentifier(tokens, tokenMap, variables, arrays, functions):
+        raise Exception("FATAL - Unrecognised identifer:\n" + code[int(undefinedIdentifier(tokens, tokenMap, variables, arrays, functions)) - 15: int(undefinedIdentifier(tokens, tokenMap, variables, arrays, functions)) + 15] + "\n" + " "*15 + "^")
 
     # 5: convert +/-/&/*/auto * into something unambiguous
     # 6: convert (auto) and (auto*) into something unambiguous
@@ -47,7 +47,7 @@ def preprocess(tokens: list, tokenMap: list, code: str, BITS: int) -> tuple:
             tokenMap.append("0")
 
     # 7: return variables, functions, tokens, tokenMap
-    return variables, lists, functions, tokens, tokenMap
+    return variables, arrays, functions, tokens, tokenMap
 
 def bracketsDontMatch(tokens: list, tokenMap: list) -> str:
     stack = []
@@ -84,18 +84,66 @@ def semicolonMissing(tokens: list, tokenMap: list) -> str:
             assignment = False
     return ""
 
+def countCommasBetweenBrackets(tokens: list, i: int) -> int:
+    answer = 0
+    layer = 1
+    while layer > 0:
+        if tokens[i] == "(":
+            layer += 1
+        elif tokens[i] == ")":
+            layer -= 1
+        elif tokens == ",":
+            answer += 1
+        i += 1
+    return answer
+
+def findIndexOfCloseSquare(tokens: list, i: int) -> int:
+    layer = 1
+    while layer > 0:
+        if tokens[i] == "[":
+            layer += 1
+        elif tokens[i] == "]":
+            layer -= 1
+        i += 1
+    return i - 1
+
 def findIdentifiers(tokens: list, tokenMap: list) -> tuple:
     variables = []
-    lists = []
+    arrays = []
     functions = []
     for i, j in enumerate(tokens):
+
         if j[0].isalpha():
-            if tokens[i - 1] == "auto":
+            if tokens[i - 1] == "auto" or (tokens[i - 2] == "auto" and tokens[i - 1] == "*"):
                 if tokens[i + 1] == "(":
-                    functions.append([j, "auto"])
+                    operands = countCommasBetweenBrackets(tokens, i + 2)
+                    functions.append([j, "auto", operands])
                     tokens[i] = "£" + j
                 elif tokens[i + 1] == "[":
-                    lists.append([j, "auto"])
+                    indexOfCloseSquare = findIndexOfCloseSquare(tokens, i + 2)
+                    if tokens[indexOfCloseSquare + 1] == "=" and tokens[indexOfCloseSquare + 2] == "{":
+                        close, tokens, tokenMap, num = closeSquiggly(tokens, indexOfCloseSquare + 2, tokenMap)
+                        if tokens[close - 1] == "}":
+                            tokens[indexOfCloseSquare + 2] = "["
+                            tokens[close - 1] = "]"
+                            if tokens[indexOfCloseSquare - 1] == "[":
+                                tokens.insert(indexOfCloseSquare, str(num + 1))
+                                tokenMap.insert(indexOfCloseSquare, tokenMap[indexOfCloseSquare])
+                    length = int(tokens[i + 2])
+                    arrays.append([j, "auto", length])
+                    tokens[i] = "%" + j
+                elif tokens[i + 2] == "[":
+                    indexOfCloseSquare = findIndexOfCloseSquare(tokens, i + 3)
+                    if tokens[indexOfCloseSquare + 1] == "=" and tokens[indexOfCloseSquare + 2] == "{":
+                        close, tokens, tokenMap, num = closeSquiggly(tokens, indexOfCloseSquare + 2, tokenMap)
+                        if tokens[close - 1] == "}":
+                            tokens[indexOfCloseSquare + 2] = "["
+                            tokens[close - 1] = "]"
+                            if tokens[indexOfCloseSquare - 1] == "[":
+                                tokens.insert(indexOfCloseSquare, str(num + 1))
+                                tokenMap.insert(indexOfCloseSquare, tokenMap[indexOfCloseSquare])
+                    length = int(tokens[i + 3])
+                    arrays.append([j, "auto*", length])
                     tokens[i] = "%" + j
                 else:
                     variables.append([j, "auto"])
@@ -103,7 +151,7 @@ def findIdentifiers(tokens: list, tokenMap: list) -> tuple:
             elif tokens[i - 1] == "*":
                 if tokens[i - 2] == "auto":
                     if tokens[i + 1] == "[":
-                        lists.append([j, "auto*"])
+                        arrays.append([j, "auto*"])
                         tokens[i] = "%" + j
                     elif tokens[i + 1] == "(":
                         functions.append([j, "auto*"])
@@ -111,26 +159,19 @@ def findIdentifiers(tokens: list, tokenMap: list) -> tuple:
                     else:
                         variables.append([j, "auto*"])
             
-            if j in [i[0] for i in lists]:
+            if j in [i[0] for i in arrays]:
                 close = closeSquare(tokens, i + 1)
                 if tokens[close] == "=":
                     tokens[i] = "%" + j
             
-        if j == "=" and tokens[i + 1] == "{":
-            close, tokens, tokenMap, num = closeSquiggly(tokens, i + 1, tokenMap)
-            if tokens[close - 1] == "}":
-                tokens[i + 1] = "["
-                tokens[close - 1] = "]"
-                if tokens[i - 2] == "[":
-                    tokens.insert(i - 1, str(num + 1))
-                    tokenMap.insert(i - 1, tokenMap[i - 1])
-            
-    return variables, lists, functions
 
-def undefinedIdentifier(tokens: list, tokenMap: list, variables: list, lists: list, functions: list) -> str:
+            
+    return variables, arrays, functions
+
+def undefinedIdentifier(tokens: list, tokenMap: list, variables: list, arrays: list, functions: list) -> str:
     for i, j in enumerate(tokens):
         if j[0].isalpha():
-            if j not in [i[0] for i in variables + lists + functions] + ["auto", "delete", "return", "asm", "if", "else", "while"]:
+            if j not in [i[0] for i in variables + arrays + functions] + ["auto", "delete", "return", "asm", "if", "else", "while"]:
                 return str(tokenMap[i])
     return ""
 

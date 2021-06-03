@@ -4,7 +4,7 @@
 
 from bCompiler2.constants import operators
 
-def reversePolish(variables: list, lists: list, functions: list, tokens: list, tokenMap: list) -> tuple:
+def reversePolish(variables: list, arrays: list, functions: list, tokens: list, tokenMap: list) -> tuple:
 
     # 1: convert to reverse polish using shunting yard
     output = []
@@ -19,7 +19,7 @@ def reversePolish(variables: list, lists: list, functions: list, tokens: list, t
         if token in [i[0] for i in variables] or token[0].isnumeric():
             output.append(token)
             tokenMapOutput.append(location)
-        elif (token in [i[0] for i in functions + lists]) or (token[0] == "%"):
+        elif (token in [i[0] for i in functions + arrays]) or (token[0] == "%"):
             operator.append(token)
             tokenMapOperator.append(location)
         elif token in operators() and token != ",":
@@ -54,7 +54,7 @@ def reversePolish(variables: list, lists: list, functions: list, tokens: list, t
             if topOp() == "[":
                 operator.pop()
                 tokenMapOperator.pop()
-            if (topOp() in [i[0] for i in lists]) or (topOp().startswith("%")):
+            if (topOp() in [i[0] for i in arrays]) or (topOp().startswith("%")):
                 output.append(operator.pop())
                 tokenMapOutput.append(tokenMapOperator.pop())
         elif token == ";":
@@ -77,6 +77,13 @@ def reversePolish(variables: list, lists: list, functions: list, tokens: list, t
             tokenMapOutput.append(location)
             operator.append("$" + token[1: ])
             tokenMapOperator.append(location)
+        elif token in ("while", "if", "elseif", "else", "asm", "return", "delete"):
+            output.append(token)
+            tokenMapOutput.append(location)
+            operator.append("$" + token)
+            tokenMapOperator.append(location)
+        else:
+            print("WARNING - Unrecognised Token in for Polish: " + token)
 
     while len(operator) > 0:
         output.append(operator.pop())
