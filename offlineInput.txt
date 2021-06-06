@@ -1,4 +1,4 @@
 $URCL
 
-IN R1, %Test
-OUT %Test2, R1
+IMM R1, 0x90
+SUB R2, R1, 0x90

@@ -464,8 +464,8 @@ def uninitialisedFetch(op: str, ops: tuple, opTypes: tuple, uninitialisedReg: li
             temp = not uninitialisedMemory[num] or temp
     
     elif len(ops) == 3:
-        if ops[1].isnumeric():
-            num = int(ops[1])
+        if ops[1][0].isnumeric():
+            num = int(ops[1], 0)
         elif ops[1] == "SP":
             num = 0
         else:
@@ -474,8 +474,8 @@ def uninitialisedFetch(op: str, ops: tuple, opTypes: tuple, uninitialisedReg: li
             temp = uninitialisedReg[num]
         elif opTypes[1] == "MEM":
             temp = not uninitialisedMemory[num]
-        if ops[2].isnumeric():
-            num = int(ops[2])
+        if ops[2][0].isnumeric():
+            num = int(ops[2], 0)
         elif ops[2] == "SP":
             num = 0
         else:

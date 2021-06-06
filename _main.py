@@ -19,4 +19,3 @@ code = f.read()
 print(emulate(code[5: ], True))
 
 #print(bCompiler2(code))
-
