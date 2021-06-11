@@ -26,6 +26,12 @@ async def on_message(message):
     if message.author == client.user:
         return
 
+    elif message.content.startswith("$lol"):
+        elif message.author == "Mod Punchtree#5817":
+            await message.channel.send(":regional_indicator_l::regional_indicator_o::regional_indicator_l:")
+        elif randint(1, 5) == 1:
+            await message.channel.send("```\nFatal - Token too big:\nyoMamma\n      ^\n```")
+
     elif message.content.startswith("$help"):
         await message.channel.send(":woman_shrugging:")
         return
