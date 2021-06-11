@@ -1,4 +1,14 @@
 $URCL
 
-IMM R1, 0x90
-SUB R2, R1, 0x90
+.add2Values
+    POP R1
+    POP R2
+    ADD R1, R1, R2
+    PSH R1
+    RET
+
+
+IMM R1, 1
+IMM R2, 2
+CAL .add2Values
+
