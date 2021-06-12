@@ -2,7 +2,7 @@
 from URCLEmulator.constants import alpha, fetchThree
 from URCLEmulator.constants import fetchNone, fetchOne, fetchOneTwo, fetchOneTwoThree, fetchTwo, fetchTwoThree, numberOfOps, urcl, validOpTypes
 
-def emulate(raw: str, connection: bool = False) -> str:
+def emulate(raw: str, connection: bool = False, outputs: bool = True) -> str:
     global offline
     offline = connection
     # pre-process
@@ -127,7 +127,7 @@ def emulate(raw: str, connection: bool = False) -> str:
     global PC; PC = 0
     global branch; branch = False
     cycleLimit = 1000
-    totalCycles = 0
+    global totalCycles; totalCycles = 0
     global warnings; warnings = ()
     global outputList; outputList = []
     
@@ -196,20 +196,21 @@ def emulate(raw: str, connection: bool = False) -> str:
         
         totalCycles += 1
     
-        print("\n".join(["WARNING - " + i for i in warnings]) + 
-              "\n\nInstruction just completed = " + str(instruction) +
-              "\nPC = " + str(PC) +
-              "\nTotal number of cycles: " + str(totalCycles) + 
-              "\nStack Pointer = " + str(correctValue(SP)) +
-              "\nTotal memory size = " + str(len(memory)) +
-              "\n\nRegisters:\n" + 
-              "\n".join(["R" + str(i) + ": " + str(j) for i, j in enumerate(registers)][1:]) +
-              "\n\nMemory:    (M0 = " + str(M0) + ")\n" +
-              "\n".join(filter(None, ["M" + str(i - M0) + ": " + str(j) if uninitialisedMem[i] and type(j) != str and i >= M0 else "" for i, j in enumerate(memory)])) +
-              "\n\nRaw Output:\n" +
-              ", ".join(["0x" + hex(i)[2:].upper() for i in outputList]) +
-              "\n\nAscii Output:\n" +
-              "".join([chr(i) for i in outputList]))
+        if outputs:
+            print("\n".join(["WARNING - " + i for i in warnings]) + 
+                  "\n\nInstruction just completed = " + str(instruction) +
+                  "\nPC = " + str(PC) +
+                  "\nTotal number of cycles: " + str(totalCycles) + 
+                  "\nStack Pointer = " + str(correctValue(SP)) +
+                  "\nTotal memory size = " + str(len(memory)) +
+                  "\n\nRegisters:\n" + 
+                  "\n".join(["R" + str(i) + ": " + str(j) for i, j in enumerate(registers)][1:]) +
+                  "\n\nMemory:    (M0 = " + str(M0) + ")\n" +
+                  "\n".join(filter(None, ["M" + str(i - M0) + ": " + str(j) if uninitialisedMem[i] and type(j) != str and i >= M0 else "" for i, j in enumerate(memory)])) +
+                  "\n\nRaw Output:\n" +
+                  ", ".join(["0x" + hex(i)[2:].upper() for i in outputList]) +
+                  "\n\nAscii Output:\n" +
+                  "".join([chr(i) for i in outputList]))
     
     # return warnings + all registers/initialised memory + outputList
     return ("\n".join(["WARNING - " + i for i in warnings]) + 
@@ -543,6 +544,20 @@ def fetch(operand: str, op: str, absMem: bool = False) -> int:
     elif operand.startswith("%"):
         if offline:
             while True:
+                print("\n".join(["WARNING - " + i for i in warnings]) + 
+                      "\n\nInstruction just completed = " + str(instruction) +
+                      "\nPC = " + str(PC) +
+                      "\nTotal number of cycles: " + str(totalCycles) + 
+                      "\nStack Pointer = " + str(correctValue(SP)) +
+                      "\nTotal memory size = " + str(len(memory)) +
+                      "\n\nRegisters:\n" + 
+                      "\n".join(["R" + str(i) + ": " + str(j) for i, j in enumerate(registers)][1:]) +
+                      "\n\nMemory:    (M0 = " + str(M0) + ")\n" +
+                      "\n".join(filter(None, ["M" + str(i - M0) + ": " + str(j) if uninitialisedMem[i] and type(j) != str and i >= M0 else "" for i, j in enumerate(memory)])) +
+                      "\n\nRaw Output:\n" +
+                      ", ".join(["0x" + hex(i)[2:].upper() for i in outputList]) +
+                      "\n\nAscii Output:\n" +
+                      "".join([chr(i) for i in outputList]))
                 num = input("Type value for port " + operand + ": ")
                 if num.isnumeric() or (num.startswith("'") and num.endswith("'")) or num.startswith("0x") or num.startswith("0b") or len(num) == 1:
                     if num.isnumeric() or num.startswith("0x") or num.startswith("0b"):

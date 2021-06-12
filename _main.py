@@ -16,6 +16,6 @@ code = f.read()
 #print(compile(code[7:], 8, 9))
 #print(genericURCLoptimiser(compile(code[7:], 8, 9), 8))
 
-print(emulate(code[5: ], True))
+print(emulate(code[5: ], True, False))
 
 #print(bCompiler2(code))

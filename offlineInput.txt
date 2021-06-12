@@ -1,14 +1,6 @@
 $URCL
 
-.add2Values
-    POP R1
-    POP R2
-    ADD R1, R1, R2
-    PSH R1
-    RET
-
-
-IMM R1, 1
-IMM R2, 2
-CAL .add2Values
+.test
+    IN R1, %RNG
+    JMP .test
 
