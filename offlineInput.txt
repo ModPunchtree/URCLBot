@@ -1,6 +1,8 @@
-$URCL
-
-.test
-    IN R1, %RNG
-    JMP .test
-
+$B 8, 9
+auto add(auto x, auto y) {
+    return x * y;
+}
+auto main() {
+    auto answer = add(9, 6);
+    return answer;
+}

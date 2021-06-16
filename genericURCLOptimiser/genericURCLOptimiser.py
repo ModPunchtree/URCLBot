@@ -207,6 +207,79 @@ def optimise(code: list, BITS: int) -> list:
     else:
         code = returnedCode
     
+    # optimise unique jumps
+    oldCode = [i for i in code]
+    returnedCode = optimiseUniqueJMP(code)
+    if oldCode != returnedCode:
+        return returnedCode
+    else:
+        code = returnedCode
+
+    # optimise unique calls
+    oldCode = [i for i in code]
+    returnedCode = optimiseUniqueCAL(code)
+    if oldCode != returnedCode:
+        return returnedCode
+    else:
+        code = returnedCode
+
+    return code
+
+def optimiseUniqueCAL(code: list) -> list:
+    for i, j in enumerate(code):
+        if j.startswith("CAL"):
+            label = j[4:]
+            count = 0
+            for k in code:
+                if k.find(label) != -1:
+                    if k.startswith("."):
+                        pass
+                    elif not(k[k.find(label) + len(label): k.find(label) + len(label) + 1]):
+                        count += 1
+                    elif k[k.find(label) + len(label)] not in alpha:
+                        count += 1
+            if count < 2:
+                uniqueLabel = ".return" + uniqueNumber()
+                code.insert(i + 1, uniqueLabel)
+                address = code.index(label)
+                endAddress = len(code) - 1
+                for k, l in enumerate(code[address: ]):
+                    if l.startswith(("JMP", "RET", "HLT")):
+                        endAddress = address + k
+                        break
+                temp = [i for i in code[address: endAddress + 1]]
+                del code[address: endAddress + 1]
+                for k, l in enumerate(temp):
+                    if l == "RET":
+                        temp[k] = "JMP " + uniqueLabel
+                code = code[: i] + ["DEC SP, SP"] + temp + [code[i + 1]] + ["INC SP, SP"] + code[i + 2: ]
+                return optimiseUniqueCAL(code)
+    return code
+
+def optimiseUniqueJMP(code: list) -> list:
+    for i, j in enumerate(code):
+        if j.startswith("JMP"):
+            label = j[4:]
+            count = 0
+            for k in code:
+                if k.find(label) != -1:
+                    if k.startswith("."):
+                        pass
+                    elif not(k[k.find(label) + len(label): k.find(label) + len(label) + 1]):
+                        count += 1
+                    elif k[k.find(label) + len(label)] not in alpha:
+                        count += 1
+            if count < 2:
+                address = code.index(label)
+                endAddress = len(code) - 1
+                for k, l in enumerate(code[address: ]):
+                    if l.startswith(("JMP", "RET", "HLT")):
+                        endAddress = address + k
+                        break
+                temp = [i for i in code[address: endAddress + 1]]
+                del code[address: endAddress + 1]
+                code = code[: i] + temp + code[i + 1:]
+                return optimiseUniqueJMP(code)  
     return code
 
 def relativesToLabels(code: list) -> list:
@@ -999,7 +1072,7 @@ def constantFolding(code: list, BITS: int) -> list:
         op = readOperation(j)
         ops = readOps(j[len(op): ])
         
-        if op in ("ADD", "RSH", "BGE", "NOR", "SUB", "MOV", "LSH", "DEC", "NEG", "AND", "OR", "NOT", "XNOR", "XOR", "NAND", "BRL", "BRG", "BRE", "BNE", "BOD", "BEV", "BLE", "BRZ", "BNZ", "BRN", "BRP", "MLT", "DIV", "MOD", "BSR", "BSL", "SRS", "BSS", "SETE", "SETNE", "SETG", "SETL", "SETGE", "SETLE"):
+        if op in ("ADD", "RSH", "BGE", "NOR", "SUB", "MOV", "LSH", "DEC", "NEG", "AND", "OR", "NOT", "XNOR", "XOR", "NAND", "BRL", "BRG", "BRE", "BNE", "BOD", "BEV", "BLE", "BRZ", "BNZ", "BRN", "BRP", "MLT", "DIV", "MOD", "BSR", "BSL", "SRS", "BSS", "SETE", "SETNE", "SETG", "SETL", "SETGE", "SETLE", "INC"):
             if op == "ADD":
                 if ops[1][0].isnumeric() and ops[2][0].isnumeric():
                     code[i] = "IMM " + ops[0] + ", " + str(int(ops[1], 0) + int(ops[2], 0))
@@ -1148,7 +1221,7 @@ def constantFolding(code: list, BITS: int) -> list:
                     return code
             elif op == "MLT":
                 if ops[1][0].isnumeric() and ops[2][0].isnumeric():
-                    code[i] = "IMM " + ops[0] + ", " + correctValue(int(ops[1], 0) * int(ops[2], 0))
+                    code[i] = "IMM " + ops[0] + ", " + correctValue(str(int(ops[1], 0) * int(ops[2], 0)), BITS)
                     return code
             elif op == "DIV":
                 if ops[1][0].isnumeric() and ops[2][0].isnumeric():
@@ -1164,14 +1237,14 @@ def constantFolding(code: list, BITS: int) -> list:
                     return code
             elif op == "BSL":
                 if ops[1][0].isnumeric() and ops[2][0].isnumeric():
-                    code[i] = "IMM " + ops[0] + ", " + correctValue(int(ops[1], 0) * 2 ** int(ops[2], 0))
+                    code[i] = "IMM " + ops[0] + ", " + correctValue(str(int(ops[1], 0) * 2 ** int(ops[2], 0)), BITS)
                     return code
             elif op == "SRS":
                 if ops[1][0].isnumeric():
                     if int(ops[1], 0) >= 2 ** (BITS - 1): 
                         code[i] = "IMM " + ops[0] + ", " + str(int(ops[1], 0) // 2 + 2 ** (BITS - 1))
                     else:
-                        code[i] = "IMM " + ops[0] + ", " + correctValue(int(ops[1], 0) // 2)
+                        code[i] = "IMM " + ops[0] + ", " + correctValue(str(int(ops[1], 0) // 2), BITS)
                     return code
             elif op == "BSS":
                 if ops[1][0].isnumeric():
@@ -1181,7 +1254,7 @@ def constantFolding(code: list, BITS: int) -> list:
                             num // 2 + 2 ** (BITS - 1)
                         code[i] = "IMM " + ops[0] + ", " + str(num)
                     else:
-                        code[i] = "IMM " + ops[0] + ", " + correctValue(int(ops[1], 0) // int(ops[2], 0))
+                        code[i] = "IMM " + ops[0] + ", " + correctValue(str(int(ops[1], 0) // int(ops[2], 0)), BITS)
                     return code
             elif op == "SETE":
                 if ops[1][0].isnumeric() and ops[2][0].isnumeric():
@@ -1227,7 +1300,7 @@ def constantFolding(code: list, BITS: int) -> list:
                     return code
             elif op == "INC":
                 if ops[1][0].isnumeric():
-                    code[i] = "IMM " + ops[0] + ", " + correctValue(int(ops[1], 0))
+                    code[i] = "IMM " + ops[0] + ", " + correctValue(str(int(ops[1], 0) + 1), BITS)
                     return code
             elif op == "NOP":
                 code.pop(i)
@@ -1286,6 +1359,148 @@ def miscellaneousOptimisations(code: list, BITS: int) -> list:
     else:
         code = returnedCode
     
+    # INCDEC
+    oldCode = [i for i in code]
+    returnedCode = INCDEC(code)
+    if oldCode != returnedCode:
+        return returnedCode
+    else:
+        code = returnedCode
+
+    # DECINC
+    oldCode = [i for i in code]
+    returnedCode = DECINC(code)
+    if oldCode != returnedCode:
+        return returnedCode
+    else:
+        code = returnedCode
+
+    # STRPOP
+    oldCode = [i for i in code]
+    returnedCode = STRPOP(code)
+    if oldCode != returnedCode:
+        return returnedCode
+    else:
+        code = returnedCode
+
+    # repeated add and sub
+    oldCode = [i for i in code]
+    returnedCode = repeatedADDSUB(code)
+    if oldCode != returnedCode:
+        return returnedCode
+    else:
+        code = returnedCode
+
+    return code
+
+def repeatedADDSUB(code: list) -> list:
+    for i, j in enumerate(code):
+        if i == len(code) - 1:
+            break
+        if j.startswith(("DEC", "SUB", "ADD", "INC")):
+            change = 0
+            ops = getOps(j)
+            original = ops[0]
+            bad = []
+            if ops[0] == ops[1]:
+                for k, l in enumerate(code[i:]):
+                    if l.startswith(("JMP", "HLT", "RET", ".")):
+                        break                   
+                    if l.startswith("DEC"):
+                        ops = getOps(l)
+                        if ops[0] == ops[1] and ops[0] == original:
+                            bad.append(k + i)
+                            change -= 1
+                    elif l.startswith("INC"):
+                        ops = getOps(l)
+                        if ops[0] == ops[1] and ops[0] == original:
+                            bad.append(k + i)
+                            change += 1
+                    elif l.startswith("ADD"):
+                        ops = getOps(l)
+                        if ops[2][0].isnumeric():
+                            if ops[0] == ops[1] and ops[0] == original:
+                                bad.append(k + i)
+                                change += int(ops[2], 0)
+                        else:
+                            if original in ops:
+                                break
+                    elif l.startswith("SUB"):
+                        ops = getOps(l)
+                        if ops[2][0].isnumeric():
+                            if ops[0] == ops[1] and ops[0] == original:
+                                bad.append(k + i)
+                                change -= int(ops[2], 0)
+                        else:
+                            if original in ops:
+                                break
+                    else:
+                        ops = readOps(l[l.find(" ") + 1:])
+                        if original in ops:
+                            break
+                if len(bad) > 1:
+                    if change == 0:
+                        for k in bad[:: -1]:
+                            code.pop(k)
+                        return repeatedADDSUB(code)
+                    elif change > 0:
+                        for k in bad[1:][:: -1]:
+                            code.pop(k)
+                        code[bad[0]] = "ADD " + original + ", " + original + ", " + str(change)
+                        return repeatedADDSUB(code)
+                    elif change < 0:
+                        for k in bad[1:][:: -1]:
+                            code.pop(k)
+                        code[bad[0]] = "SUB " + original + ", " + original + ", " + str(change * -1)
+                        return repeatedADDSUB(code)
+    return code
+
+def getOps(j):
+    if j.startswith(("DEC", "INC")):
+        return (j[4: j.find(",")], j[j.find(",") + 2: ])
+    else:
+        return (j[4: j.find(",")], j[j.find(",") + 2: ][: j[j.find(",") + 2: ].find(",")], j[j.find(",") + 2: ][j[j.find(",") + 2: ].find(",") + 2: ])
+
+def STRPOP(code: list) -> list:
+    for i, j in enumerate(code):
+        if i == len(code) - 1:
+            break
+        if j.startswith("STR SP, ") and code[i + 1].startswith("POP"):
+            code[i] = "MOV " + code[i + 1][4: ] + ", " + j[j.find(",") + 2: ]
+            code[i + 1] = "INC SP, SP"
+            return STRPOP(code)
+    return code
+
+def DECINC(code: list) -> list:
+    for i, j in enumerate(code):
+        if i == len(code) - 1:
+            break
+        if j.startswith("DEC"):
+            target = j[4: j.find(",")]
+            fetch = j[j.find(",") + 2: ]
+            if code[i + 1].startswith("INC"):
+                target2 = code[i + 1][4: code[i + 1].find(",")]
+                fetch2 = code[i + 1][code[i + 1].find(",") + 2: ]
+                if target2 == fetch2 and target == target2:
+                    code[i] = "MOV " + target + ", " + fetch
+                    code.pop(i + 1)
+                    return DECINC(code)
+    return code
+
+def INCDEC(code: list) -> list:
+    for i, j in enumerate(code):
+        if i == len(code) - 1:
+            break
+        if j.startswith("INC"):
+            target = j[4: j.find(",")]
+            fetch = j[j.find(",") + 1: ]
+            if code[i + 1].startswith("DEC"):
+                target2 = code[i + 1][4: code[i + 1].find(",")]
+                fetch2 = code[i + 1][code[i + 1].find(",") + 1: ]
+                if target2 == fetch2 and target == target2:
+                    code[i] = "MOV " + target + ", " + fetch
+                    code.pop(i + 1)
+                    return INCDEC(code)
     return code
 
 def SETBRZ(code: list) -> list:
@@ -1334,7 +1549,7 @@ def PSHPOP(code: list) -> list:
         if i == len(code) - 1:
             break
         if j.startswith("PSH") and code[i + 1].startswith("POP"):
-            code[i + 1] = "MOV " + j[j.index(" ") + 1: ] + ", " + code[i + 1][code[i + 1].index(" ") + 1: ]
+            code[i + 1] = "MOV " + code[i + 1][code[i + 1].index(" ") + 1: ] + ", " + j[j.index(" ") + 1: ]
             code.pop(i)
             return PSHPOP(code)
     return code
@@ -1351,7 +1566,7 @@ def POPPSH(code: list) -> list:
 
 def unreachableCode(code: list) -> list:
     for i, j in enumerate(code[:-1]):
-        if j.startswith("JMP") or j.startswith("HLT"):
+        if j.startswith("JMP") or j.startswith("HLT") or j.startswith("RET"):
             if not code[i + 1].startswith("."):
                 code.pop(i + 1)
                 return unreachableCode(code)
@@ -1374,6 +1589,8 @@ def optimiseWriteBeforeRead(code: list) -> list:
                 nextInstructions.append(k)
             useful = False
             overwritten = False
+            if ops.count(ops[0]) > 1:
+                useful = True
             for k in nextInstructions:
                 op2 = readOperation(k)
                 ops2 = readOps(k[len(op2) + 1: ])
@@ -1394,9 +1611,12 @@ def optimiseWriteBeforeRead(code: list) -> list:
                 if op2 not in ("JMP", "BGE", "BRL", "BRG", "BRE", "BNE", "BOD", "BEV", "BLE", "BRZ", "BNZ", "BRN", "BRP", "CAL", "RET", "HLT"):
                     if ops2[0] == ops[0]:
                         overwritten = True
+                if not useful and overwritten:
+                    code.pop(i)
+                    return optimiseWriteBeforeRead(code)
             if not useful and overwritten:
                 code.pop(i)
-                return optimiseWriteBeforeRead(code)               
+                return optimiseWriteBeforeRead(code)
     return code
 
 def findMINREG(code: list) -> int:
@@ -1472,8 +1692,8 @@ def PSHIMMthenPOP(code: list) -> list:
                 num = 0
                 for k in code[: i][: : -1]:
                     num -= 1
-                    if k.startswith("."):
-                        pass
+                    if k.startswith((".", "CAL")) or k.find("SP, SP") != -1:
+                        break
                     elif k.startswith("PSH"):
                         if k[k.index(" ") + 1: ][0].isnumeric():
                             code[i] = "IMM " + j[j.index(" ") + 1: ] + ", " + k[k.index(" ") + 1: ]
