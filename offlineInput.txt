@@ -1,8 +1,9 @@
-$B 8, 9
+$B 8, 8
+auto a = 6;
+auto b = 2;
+a -= 1;
+b += 1;
 auto add(auto x, auto y) {
-    return x * y;
+  return x + y;
 }
-auto main() {
-    auto answer = add(9, 6);
-    return answer;
-}
+auto answer = add(a, b);
