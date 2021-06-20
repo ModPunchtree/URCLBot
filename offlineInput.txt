@@ -1,9 +1,15 @@
-$B 8, 8
-auto a = 6;
-auto b = 2;
-a -= 1;
-b += 1;
-auto add(auto x, auto y) {
-  return x + y;
+$B 8, 9
+auto a = 0;
+auto b = 1;
+auto i = 0;
+
+while (i < 5) {
+    a = a + b;
+    b = a + b;
+    i += 1;
+
+    asm {
+        OUT %8SEG, a;
+        OUT %8SEG, b;
+    }
 }
-auto answer = add(a, b);

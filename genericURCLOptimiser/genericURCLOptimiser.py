@@ -247,13 +247,14 @@ def optimiseUniqueCAL(code: list) -> list:
                     if l.startswith(("JMP", "RET", "HLT")):
                         endAddress = address + k
                         break
-                temp = [i for i in code[address: endAddress + 1]]
-                del code[address: endAddress + 1]
-                for k, l in enumerate(temp):
-                    if l == "RET":
-                        temp[k] = "JMP " + uniqueLabel
-                code = code[: i] + ["DEC SP, SP"] + temp + [code[i + 1]] + ["INC SP, SP"] + code[i + 2: ]
-                return optimiseUniqueCAL(code)
+                if not((i >= address) and (i <= endAddress)):
+                    temp = [k for k in code[address: endAddress + 1]]
+                    del code[address: endAddress + 1]
+                    for k, l in enumerate(temp):
+                        if l == "RET":
+                            temp[k] = "JMP " + uniqueLabel
+                    code = code[: i] + ["DEC SP, SP"] + temp + [code[i + 1]] + ["INC SP, SP"] + code[i + 2: ]
+                    return optimiseUniqueCAL(code)
     return code
 
 def optimiseUniqueJMP(code: list) -> list:
@@ -276,10 +277,11 @@ def optimiseUniqueJMP(code: list) -> list:
                     if l.startswith(("JMP", "RET", "HLT")):
                         endAddress = address + k
                         break
-                temp = [i for i in code[address: endAddress + 1]]
-                del code[address: endAddress + 1]
-                code = code[: i] + temp + code[i + 1:]
-                return optimiseUniqueJMP(code)  
+                if not((i >= address) and (i <= endAddress)):
+                    temp = [k for k in code[address: endAddress + 1]]
+                    del code[address: endAddress + 1]
+                    code = code[: i] + temp + code[i + 1:]
+                    return optimiseUniqueJMP(code)
     return code
 
 def relativesToLabels(code: list) -> list:
