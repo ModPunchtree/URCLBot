@@ -71,6 +71,8 @@ def emulate(raw: str, connection: bool = False, outputs: bool = True) -> str:
     MINREG = findMINREGHeader()
     if MINREG > 2 ** BITS:
         raise Exception("FATAL - MINREG cannot be more than " + str(2 ** BITS))
+    elif MINREG > 65536:
+        raise Exception("FATAL - MINREG cannot be more than 65536")
     
     # 3 find MINRAM, MINSTACK delete it
     MINRAM = findMINRAMHeader()
