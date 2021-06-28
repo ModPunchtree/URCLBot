@@ -1,15 +1,4 @@
-$B 8, 9
-auto a = 0;
-auto b = 1;
-auto i = 0;
+$URCL
 
-while (i < 5) {
-    a = a + b;
-    b = a + b;
-    i += 1;
-
-    asm {
-        OUT %8SEG, a;
-        OUT %8SEG, b;
-    }
-}
+BITS 32
+OUT %7SEG, 0xFFFFFFFF

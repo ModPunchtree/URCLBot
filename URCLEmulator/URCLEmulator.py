@@ -64,8 +64,8 @@ def emulate(raw: str, connection: bool = False, outputs: bool = True) -> str:
     # headers
     # 1 find word length header, else assume 8 bits
     global BITS; BITS = findBITSHeader()
-    if BITS > 16:
-        raise Exception("FATAL - BITS cannot be more than 16")
+    #if BITS > 16:
+    #    raise Exception("FATAL - BITS cannot be more than 16")
 
     # 2 find MINREG, else calculate it
     MINREG = findMINREGHeader()
@@ -210,7 +210,7 @@ def emulate(raw: str, connection: bool = False, outputs: bool = True) -> str:
                   "\n\nRaw Output:\n" +
                   ", ".join(["0x" + hex(i)[2:].upper() for i in outputList]) +
                   "\n\nAscii Output:\n" +
-                  "".join([chr(i) for i in outputList]))
+                  "".join([chr(i % 65536) for i in outputList]))
     
     # return warnings + all registers/initialised memory + outputList
     return ("\n".join(["WARNING - " + i for i in warnings]) + 
@@ -225,7 +225,7 @@ def emulate(raw: str, connection: bool = False, outputs: bool = True) -> str:
             "\n\nOutput:\n" +
             ", ".join(["0x" + hex(i)[2:].upper() for i in outputList]) +
             "\n\nAscii Output:\n" +
-            "".join([chr(i) for i in outputList]))
+            "".join([chr(i % 65536) for i in outputList]))
 
 ################################################
 
@@ -253,7 +253,10 @@ def findMINREGHeader() -> int:
     return 8
 
 def findMINRAMHeader() -> int:
-    MINRAM = 2 ** BITS
+    if BITS > 16:
+        MINRAM = 2 ** 16
+    else:
+        MINRAM = 2 ** BITS
     for i in range(len(code)):
         if code[i].startswith("MINRAM"):
             MINRAM = int(code[i][6:], 0)
@@ -557,7 +560,7 @@ def fetch(operand: str, op: str, absMem: bool = False) -> int:
                       "\n\nRaw Output:\n" +
                       ", ".join(["0x" + hex(i)[2:].upper() for i in outputList]) +
                       "\n\nAscii Output:\n" +
-                      "".join([chr(i) for i in outputList]))
+                      "".join([chr(i % 65536) for i in outputList]))
                 num = input("Type value for port " + operand + ": ")
                 if num.isnumeric() or (num.startswith("'") and num.endswith("'")) or num.startswith("0x") or num.startswith("0b") or len(num) == 1:
                     if num.isnumeric() or num.startswith("0x") or num.startswith("0b"):
