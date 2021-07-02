@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "repl_python3_FlaglessURCLBot"
+name = "repl_python3_URCLBot"
 version = "0.1.0"
 description = ""
 authors = ["ModPunchtree <<>>"]

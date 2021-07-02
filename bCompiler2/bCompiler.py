@@ -7,6 +7,7 @@
 # 5: Compiler Optimisations
 # 6: General Optimisations
 
+from bCompiler2.generateURCL import generateURCL
 from bCompiler2.reversePolish import reversePolish
 from bCompiler2.preprocess import preprocess
 from bCompiler2.tokeniser import tokenise
@@ -31,6 +32,9 @@ def bCompiler2(raw: str) -> str:
 
     # 3: Reverse Polish
     tokens, tokenMap = reversePolish(variables, arrays, functions, tokens, tokenMap)
+
+    # 4: Generate URCL
+    #output = generateURCL(tokens, tokenMap, variables, functions, arrays, MINREG, BITS)
 
     return tokens
 

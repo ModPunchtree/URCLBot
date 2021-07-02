@@ -34,7 +34,7 @@ async def on_message(message):
         await message.channel.send(":woman_shrugging:")
         return
 
-    elif str(message.channel) != "flagless-urcl-bot":
+    elif str(message.channel) != "urcl-bot":
         return
 
     elif message.content.startswith("$B"):

@@ -1,2 +1,2 @@
-# FlaglessURCLBot
-Flagless URCL Bot
+# URCLBot
+URCL Bot

@@ -1,4 +1,13 @@
-$URCL
+$B 8, 9
 
-BITS 32
-out %7SEG, 0xFFFFFFFF
+
+auto a = 3;
+auto b = 5;
+auto c = a + a * b;
+
+
+[a, auto, 3, =, b, auto, 5, =, c, auto, a, a, b, binary*, binary+, =]
+
+[a, auto, 3, =]
+
+[a, b, binary+]
