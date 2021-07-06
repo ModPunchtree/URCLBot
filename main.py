@@ -30,11 +30,15 @@ async def on_message(message):
         elif randint(1, 5) == 1:
             await message.channel.send("```\nFatal - Token too big:\nyoMamma\n      ^\n```")
 
-    elif message.content.startswith("$help"):
+    elif message.content.startswith("$help") and str(message.channel) != "urcl-bot":
         await message.channel.send(":woman_shrugging:")
         return
 
     elif str(message.channel) != "urcl-bot":
+        return
+
+    elif message.content.startswith("$help"):
+        await message.channel.send("""```c\nTo emulate URCL code do:\n$URCL\n// URCL code goes here\n\nTo compile B code to optimised URCL do:\n$B [wordLength = 8], [numberOfRegisters = 2]\n// B code goes here\n\nTo compile B code to unoptimised URCL do:\n$BAD [wordLength = 8], [numberOfRegisters = 2]\n// B code goes here\n\nTo optimise URCL code do:\n$optimise\n// URCL code goes here\n\nTo "LOL" do:\n$lol\n```""")
         return
 
     elif message.content.startswith("$BAD"):
