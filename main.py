@@ -63,7 +63,7 @@ async def on_message(message):
         
         await message.channel.send("Optimising...")
         try:
-            text = "\n".join(genericURCLoptimiser(text, int(BITS)))
+            text = ("\n".join(genericURCLoptimiser(text, int(BITS)))).replace(",", " ")
         except Exception as x:
             await message.channel.send("ERROR: \n" + str(x))
             return
@@ -89,8 +89,16 @@ async def on_message(message):
     elif message.content.startswith("$URCL"):
         await message.channel.send("Emulating...")
         text = message.content[5: ]
+        text = text.upper()
+        while text.find("  ") != -1:
+            text = text.replace("  ", " ")
+        text = text.split("\n")
+        for i, j in enumerate(text):
+            if j.find(",") == -1:
+                text[i] = (j.replace(" ", ", ")).replace(", ", " ", 1)
+        text = "\n".join(text)
         try:
-            text = emulate(text.upper(), False, False)
+            text = emulate(text, False, False)
         except Exception as x:
             await message.channel.send("ERROR: \n" + str(x))
             return

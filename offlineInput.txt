@@ -1,13 +1,4 @@
-$B 8, 9
+$URCL
 
-
-auto a = 3;
-auto b = 5;
-auto c = a + a * b;
-
-
-[a, auto, 3, =, b, auto, 5, =, c, auto, a, a, b, binary*, binary+, =]
-
-[a, auto, 3, =]
-
-[a, b, binary+]
+IMM R1 5
+HLT
