@@ -37,6 +37,35 @@ async def on_message(message):
     elif str(message.channel) != "urcl-bot":
         return
 
+    elif message.content.startswith("$BAD"):
+        await message.channel.send("Compiling...")
+        if len(message.content) > 2:
+            text = message.content[5:message.content.index("\n")]
+            if text.find(" ") != -1:
+                text1 = text[:text.find(" ")]
+                text2 = text[text.find(" ") + 1:]
+            else:
+                text1 = text
+                text2 = "2"
+            if text1.isnumeric():
+                BITS = text1
+            else:
+                BITS = "8"
+            text = message.content[message.content.index("\n"):]
+        else:
+            BITS = "8"
+            text = message.content[2:]
+        try:
+            text = compile(text, int(BITS), int(text2))
+        except Exception as x:
+            await message.channel.send("ERROR: \n" + str(x))
+            return
+        f = open("output.txt", "w")
+        f.write(text)
+        f.close()
+        await message.channel.send(file=discord.File("output.txt"))
+        return
+
     elif message.content.startswith("$B"):
         await message.channel.send("Compiling...")
         if len(message.content) > 2:
@@ -71,8 +100,6 @@ async def on_message(message):
         f.write(text)
         f.close()
         await message.channel.send(file=discord.File("output.txt"))
-        return
-        
         return
     
     elif message.content.startswith("$MPU6"):
