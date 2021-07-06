@@ -27,7 +27,7 @@ async def on_message(message):
     elif message.content.startswith("$lol"):
         if str(message.author) == "Mod Punchtree#5817":
             await message.channel.send(":regional_indicator_l::regional_indicator_o::regional_indicator_l:")
-        elif randint(1, 10) == 1:
+        elif randint(1, 20) == 1:
             await message.channel.send("```\nFatal - Token too big:\nyoMamma\n      ^\n```")
         else:
             await message.channel.send(":regional_indicator_l::regional_indicator_o::regional_indicator_l:")
