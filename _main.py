@@ -23,7 +23,7 @@ while text.find("  ") != -1:
     text = text.replace("  ", " ")
 text = text.split("\n")
 for i, j in enumerate(text):
-    if j.find(",") == -1:
+    if (j.find(",") == -1) and (j.find("=") == -1):
         text[i] = (j.replace(" ", ", ")).replace(", ", " ", 1)
 text = "\n".join(text)
 print(emulate(text, True, False))
