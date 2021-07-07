@@ -1,4 +1,13 @@
-$URCL
+$B 8, 9
 
-IMM R1 5
-HLT
+auto add(auto x, auto y) {
+    return x + y;
+}
+
+auto main() {
+    auto b = 1;
+    while (b < 10) {
+        b = add(b, 1);
+    }
+    return 0;
+}

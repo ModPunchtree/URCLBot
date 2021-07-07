@@ -4,7 +4,7 @@ from bCompiler.constants import alpha, assignmentOperators, binaryOperators, num
 def fetch(variable: str) -> str:
     global useNumber
     if ((variable not in (RegVariables + RAMVariables)) and ((functionScope + "_" + variable) not in (RegVariables + RAMVariables))) and not(variable[0].isnumeric()):
-        return "FATAL - Tried to fetch an undefined variable: " + variable
+        raise Exception("FATAL - Tried to fetch an undefined variable: " + variable)
     if (variable[:len(functionScope) + 1] != (functionScope + "_")) and not(variable[0].isnumeric()):
         variable = functionScope + "_" + variable
     if variable in RegVariables:
@@ -37,19 +37,19 @@ def lastIf() -> int:
     for i in range(len(squigglyStack)):
         if squigglyStack[len(squigglyStack) - 1 - i][0] == "if":
             return int(squigglyStack[len(squigglyStack) - 1 - i][1])
-    return "FATAL"
+    raise Exception("FATAL - Failed to find if statement")
 
 def lastWhile() -> int:
     for i in range(len(squigglyStack)):
         if squigglyStack[len(squigglyStack) - 1 - i][0] == "while":
             return squigglyStack[len(squigglyStack) - 1 - i][1]
-    return "FATAL"
+    raise Exception("FATAL - Failed to find while statement")
 
 def lastCon() -> int:
     for i in range(len(squigglyStack)):
         if squigglyStack[len(squigglyStack) - 1 - i][0] in ["if", "elseif", "else"]:
             return int(squigglyStack[len(squigglyStack) - 1 - i][1])
-    return "FATAL"
+    raise Exception("FATAL - Failed to find if/elseif/else statement")
 
 def isValid(word: str) -> bool:
     for i in word:
@@ -60,9 +60,9 @@ def isValid(word: str) -> bool:
 def createVariable(variable: str) -> str:
     global useNumber
     if variable[0].isnumeric():
-        return "FATAL - Invalid variable name: " + variable
+        raise Exception("FATAL - Invalid variable name: " + variable)
     if not(isValid(variable)):
-        return "FATAL - Invalid variable name: " + variable
+        raise Exception("FATAL - Invalid variable name: " + variable)
     if variable[:len(functionScope)] != functionScope:
         variable = functionScope + "_" + variable
     try:
@@ -93,7 +93,7 @@ def delVar(variable: str) -> str:
         num = RAMVariables.index(variable)
         RAMVariables[num] = ""
     else:
-        return "FATAL - Tried to delete non-existant variable: " + variable
+        raise Exception("FATAL - Tried to delete non-existant variable: " + variable)
     
     definedVariables.pop(definedVariables.index(variable))
     return ""
@@ -122,9 +122,9 @@ def unaryToURCL() -> str:
     elif token == "+":
         pass
     elif token == "*":
-        return "FATAL - This compiler does not support variable pointers"
+        raise Exception("FATAL - This compiler does not support variable pointers")
     elif token == "&":
-        return "FATAL - This compiler does not support variable pointers"
+        raise Exception("FATAL - This compiler does not support variable pointers")
     elif token == "++":
         output.append("INC " + location2 + ", " + location1)
     elif token == "--":
@@ -172,9 +172,9 @@ def unaryConstant() -> str:
     elif token == "+":
         pass
     elif token == "*":
-        return "FATAL - Pointers are not supported on this compiler"
+        raise Exception("FATAL - Pointers are not supported on this compiler")
     elif token == "&":
-        return "FATAL - Pointers are not supported on this compiler"
+        raise Exception("FATAL - Pointers are not supported on this compiler")
     elif token == "++":
         tokens[index - 1] = str(num + 1)
     elif token == "--":
@@ -215,7 +215,7 @@ def binaryToURCL() -> str:
         elif op1 == op2:
             output.append("SETGE " + temp + ", " + op1 + ", 1")
         else:
-            return "FATAL - Unhandled operand combination for: " + token
+            raise Exception("FATAL - Unhandled operand combination for: " + token)
     elif token == "&&":
         if op1 == op2:
             output.append("IMM " + temp + ", 1")
@@ -232,7 +232,7 @@ def binaryToURCL() -> str:
             output.append("AND " + temp + ", " + temp + ", " + op2)
             output.append("POP " + op2)
         else:
-            return "FATAL - Unhandled operand combination for: " + token
+            raise Exception("FATAL - Unhandled operand combination for: " + token)
     elif token == "|":
         output.append("OR " + temp + ", " + op1 + ", " + op2)
     elif token == "^":
@@ -245,68 +245,68 @@ def binaryToURCL() -> str:
         elif op1 != op2:
             output.append("SETNE " + temp + ", " + op1 + ", " + op2)
         else:
-            return "FATAL - Unhandled operand combination for: " + token
+            raise Exception("FATAL - Unhandled operand combination for: " + token)
     elif token == "==":
         if op1 == op2:
             output.append("IMM " + temp + ", 1")
         elif op1 != op2:
             output.append("SETE " + temp + ", " + op1 + ", " + op2)
         else:
-            return "FATAL - Unhandled operand combination for: " + token
+            raise Exception("FATAL - Unhandled operand combination for: " + token)
     elif token == ">=":
         if op1 == op2:
             output.append("IMM " + temp + ", 1")
         elif op1 != op2:
             output.append("SETGE " + temp + ", " + op1 + ", " + op2)
         else:
-            return "FATAL - Unhandled operand combination for: " + token
+            raise Exception("FATAL - Unhandled operand combination for: " + token)
     elif token == ">":
         if op1 == op2:
             output.append("IMM " + temp + ", 0")
         elif op1 != op2:
             output.append("SETG " + temp + ", " + op1 + ", " + op2)
         else:
-            return "FATAL - Unhandled operand combination for: " + token
+            raise Exception("FATAL - Unhandled operand combination for: " + token)
     elif token == "<=":
         if op1 == op2:
             output.append("IMM " + temp + ", 1")
         elif op1 != op2:
             output.append("SETLE " + temp + ", " + op1 + ", " + op2)
         else:
-            return "FATAL - Unhandled operand combination for: " + token
+            raise Exception("FATAL - Unhandled operand combination for: " + token)
     elif token == "<":
         if op1 == op2:
             output.append("IMM " + temp + ", 0")
         elif op1 != op2:
             output.append("SETL " + temp + ", " + op1 + ", " + op2)
         else:
-            return "FATAL - Unhandled operand combination for: " + token
+            raise Exception("FATAL - Unhandled operand combination for: " + token)
     elif token == ">>":
         if op2 == "1":
             output.append("RSH " + temp + ", " + op1)
         elif op2 != "1":
             output.append("BSR " + temp + ", " + op1 + ", " + op2)
         else:
-            return "FATAL - Unhandled operand combination for: " + token
+            raise Exception("FATAL - Unhandled operand combination for: " + token)
     elif token == "<<":
         if op2 == "1":
             output.append("LSH " + temp + ", " + op1)
         elif op2 != "1":
             output.append("BSL " + temp + ", " + op1 + ", " + op2)
         else:
-            return "FATAL - Unhandled operand combination for: " + token
+            raise Exception("FATAL - Unhandled operand combination for: " + token)
     elif token == "-":
         if op1 == op2:
             output.append("IMM " + temp + ", 0")
         elif op1 != op2:
             output.append("SUB " + temp + ", " + op1 + ", " + op2)
         else:
-            return "FATAL - Unhandled operand combination for: " + token
+            raise Exception("FATAL - Unhandled operand combination for: " + token)
     elif token == "+":
         output.append("ADD " + temp + ", " + op1 + ", " + op2)
     elif token == "%":
         if op2 == "0":
-            return "FATAL - Division by zero error"
+            raise Exception("FATAL - Division by zero error")
         elif op1 == op2:
             output.append("IMM " + temp + ", 0")
         elif op1 == "0":
@@ -314,10 +314,10 @@ def binaryToURCL() -> str:
         elif op1 != op2:
             output.append("MOD " + temp + ", " + op1 + ", " + op2)
         else:
-            return "FATAL - Unhandled operand combination for: " + token
+            raise Exception("FATAL - Unhandled operand combination for: " + token)
     elif token == "/":
         if op2 == "0":
-            return "FATAL - Division by zero error"
+            raise Exception("FATAL - Division by zero error")
         elif op1 == op2:
             output.append("IMM " + temp + ", 1")
         elif op1 == "0":
@@ -329,7 +329,7 @@ def binaryToURCL() -> str:
         elif op1 != op2:
             output.append("DIV " + temp + ", " + op1 + ", " + op2)
         else:
-            return "FATAL - Unhandled operand combination for: " + token
+            raise Exception("FATAL - Unhandled operand combination for: " + token)
     elif token == "*":
         if (op1 == "0") or (op2 == "0"):
             output.append("IMM " + temp + ", 0")
@@ -344,7 +344,7 @@ def binaryToURCL() -> str:
         elif (op1 != "0") and (op2 != "0"):
             output.append("MLT " + temp + ", " + op1 + ", " + op2)
         else:
-            return "FATAL - Unhandled operand combination for: " + token
+            raise Exception("FATAL - Unhandled operand combination for: " + token)
     tokens[index - 2] = tempName
     tokens.pop(index)
     tokenMap.pop(index)
@@ -419,7 +419,7 @@ def binaryConstant() -> str:
     elif token == "*":
         tokens[index - 2] = num1 * num2
     else:
-        return "FATAL - Undefined binary operator: " + token
+        raise Exception("FATAL - Undefined binary operator: " + token)
     tokens[index - 2] = str(correctValue(tokens[index - 2]))
     tokens.pop(index)
     tokenMap.pop(index)
@@ -461,7 +461,7 @@ def assignmentToURCL() -> str:
         else:
             output.append("BSR " + op1 + ", " + op1 + ", " + op2)
     else:
-        return "FATAL - Undefined assignment operator: " + token
+        raise Exception("FATAL - Undefined assignment operator: " + token)
     if tokens[index - 1][len(functionScope) + 1: len(functionScope) + 5] == "TEMP":
         delVar(tokens[index - 1])
     tokens.pop(index)
@@ -611,7 +611,7 @@ def generateURCL(tokens_: list, tokenMap_: list, functions: list, variables_: li
                     tokenMap.pop(index)
                 index = 0
             else:
-                return "FATAL - Undefined token: " + token
+                raise Exception("FATAL - Undefined token: " + token)
                 
         elif (token[0].isnumeric()) or (token in variables) or (token in RegVariables) or (token in RAMVariables):
             index += 1
@@ -636,7 +636,7 @@ def generateURCL(tokens_: list, tokenMap_: list, functions: list, variables_: li
                 if y:
                     return y
             else:
-                return "FATAL - Unrecognised operand: " + token
+                raise Exception("FATAL - Unrecognised operand: " + token)
 
         elif token in functions:
             inputs = []
@@ -644,7 +644,7 @@ def generateURCL(tokens_: list, tokenMap_: list, functions: list, variables_: li
                 if i[0] == token:
                     inputs = i[1]
             if inputs == []:
-                return "FATAL - Undefined function: " + token
+                raise Exception("FATAL - Undefined function: " + token)
 
             if functionScope == token: # save variables if recursive
                 temp2 = []
@@ -735,7 +735,7 @@ def generateURCL(tokens_: list, tokenMap_: list, functions: list, variables_: li
         elif token == "asm":
             pass #asm
         else:
-            return "FATAL - Unrecognised token: " + token + "\n" + code[tokenMap[index] - 15: tokenMap[index] + 15] + "\n               ^"
+            raise Exception("FATAL - Unrecognised token: " + token + "\n" + code[tokenMap[index] - 15: tokenMap[index] + 15] + "\n               ^")
     
     if output[-1] != "HLT":
         output.append("HLT")
