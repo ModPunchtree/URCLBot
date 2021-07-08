@@ -234,7 +234,7 @@ def optimise(code: list, BITS: int) -> list:
     return code
 
 def optimiseJMPBranch(code: list) -> list:
-    for i, j in enumerate(code):
+    for i, j in enumerate(code[: -1]):
         if j.startswith("JMP"):
             label = j[4:]
             found = False

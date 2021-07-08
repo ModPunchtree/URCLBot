@@ -178,6 +178,13 @@ def delTEMP() -> None:
         else:
             line += 1
 
+def delLODTEMP() -> None:
+    for i, j in enumerate(output):
+        if j == "//TEMP":
+            if output[i - 1].startswith("LOD"):
+                output.pop(i)
+                output.pop(i - 1)
+
 def optimise(output_: list) -> list:
     
     global output; output = output_
@@ -194,6 +201,7 @@ def optimise(output_: list) -> list:
     optimiseLabels()
     ADDSUBtoINCDEC()
     URCLOperationMOV()
+    delLODTEMP()
     delTEMP()
     
     return output

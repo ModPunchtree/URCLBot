@@ -8,6 +8,8 @@ def fetch(variable: str) -> str:
     if (variable[:len(functionScope) + 1] != (functionScope + "_")) and not(variable[0].isnumeric()):
         variable = functionScope + "_" + variable
     if variable in RegVariables:
+        if whileFlag:
+            whileFetchList.append([variable, "R" + str(RegVariables.index(variable) + 1)])
         return "R" + str(RegVariables.index(variable) + 1)
     if variable in RAMVariables:
         reg = leastRecentlyUsed.index(min(leastRecentlyUsed)) + 1
@@ -23,8 +25,12 @@ def fetch(variable: str) -> str:
         leastRecentlyUsed[reg - 1] = useNumber
         useNumber += 1
         RAMVariables[RAMVariables.index(variable)] = ""
+        if whileFlag:
+            whileFetchList.append([variable, "R" + str(reg)])
         return "R" + str(reg)
     if variable[0].isnumeric():
+        if whileFlag:
+            whileFetchList.append([variable, str(int(variable, 0))])
         return str(int(variable, 0))
     return variable
 
@@ -491,6 +497,8 @@ def generateURCL(tokens_: list, tokenMap_: list, functions: list, variables_: li
     global variables; variables = variables_
     global functionInputs; functionInputs = [["global", 0]] # name, inputs
     global definedVariables; definedVariables = []
+    global whileFlag; whileFlag = False
+    global whileFetchList; whileFetchList = [] # variable name, location
     
     while index < len(tokens):
         token = tokens[index]
@@ -541,6 +549,7 @@ def generateURCL(tokens_: list, tokenMap_: list, functions: list, variables_: li
                     num = str(uniqueNum())
                     output.append(".whileHead" + num)
                     squigglyStack.append(["while", num])
+                    whileFlag = True
             elif token[1:] == "asm":
                 tokens.pop(index + 1)
                 tokenMap.pop(index + 1)
@@ -606,6 +615,7 @@ def generateURCL(tokens_: list, tokenMap_: list, functions: list, variables_: li
                         delVar(tokens[index - 1])
                     tokens.pop(index - 1)
                     tokenMap.pop(index - 1)
+                    whileFlag = False
                 else:
                     tokens.pop(index)
                     tokenMap.pop(index)
@@ -725,6 +735,48 @@ def generateURCL(tokens_: list, tokenMap_: list, functions: list, variables_: li
                         else:
                             break
             elif squigglyStack[-1][0] == "while":
+                oldOutput = [xxxx for xxxx in output]
+                oldRegVariables = [xxxx for xxxx in RegVariables]
+                oldRAMVariables = [xxxx for xxxx in RAMVariables]
+                oldleastRecentlyUsed = [xxxx for xxxx in leastRecentlyUsed]
+                try:
+                    for aa, bb in whileFetchList:
+                        badList = []
+                        for xxx in range(len(RegVariables)):
+                            badList.append(createTEMP())
+                            badd = fetch(badList[-1])
+                            op1 = output[-1][output[-1].find(" ") + 1: ]
+                            if op1.find(",") != -1:
+                                op1 = op1[: op1.find(",")]
+                            if (op1 == badd) and (badList[-1] != aa):
+                                output.append("//TEMP")
+                        if aa.find("TEMP") == -1:
+                            temp55 = fetch(aa)
+                            if temp55 != bb:
+                                raise Exception("FATAL - Compiler failed to fetch variables for while loop")
+                except Exception:
+                    output = [xxxx for xxxx in oldOutput]
+                    RegVariables = [xxxx for xxxx in oldRegVariables]
+                    RAMVariables = [xxxx for xxxx in oldRAMVariables]
+                    leastRecentlyUsed = [xxxx for xxxx in oldleastRecentlyUsed]
+                    for aa, bb in whileFetchList:
+                        badList = []
+                        for xxx in range(len(RegVariables) - 1):
+                            badList.append(createTEMP())
+                            badd = fetch(badList[-1])
+                            op1 = output[-1][output[-1].find(" ") + 1: ]
+                            if op1.find(",") != -1:
+                                op1 = op1[: op1.find(",")]
+                            if (op1 == badd) and (badList[-1] != aa):
+                                output.append("//TEMP")
+                        if aa.find("TEMP") == -1:
+                            temp55 = fetch(aa)
+                            if temp55 != bb:
+                                raise Exception("FATAL - Compiler failed to fetch variables for while loop")
+                for xxx in badList:
+                    delVar(xxx)
+                for xx in whileFetchList:
+                    whileFetchList.pop()
                 output.append("JMP .whileHead" + str(squigglyStack[-1][1]))
                 output.append(".whileEnd" + str(lastWhile()))
                 squigglyStack.pop()
