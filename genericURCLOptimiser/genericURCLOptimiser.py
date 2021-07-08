@@ -268,7 +268,7 @@ def optimiseUniqueJMP(code: list) -> list:
                         pass
                     elif not(k[k.find(label) + len(label): k.find(label) + len(label) + 1]):
                         count += 1
-                    elif k[k.find(label) + len(label)] not in alpha:
+                    elif k[k.find(label) + len(label)] not in alpha():
                         count += 1
             if count < 2:
                 address = code.index(label)
