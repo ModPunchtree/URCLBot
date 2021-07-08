@@ -1,11 +1,7 @@
 $B 8, 9
 
 auto a = 1;
-auto b = 0;
+auto b = 1;
 while (a < 200) {
     a = a + b;
-    b = a - b;
-    if (a > b + 5) {
-        auto c = a - 1;
-    }
 }

@@ -223,7 +223,63 @@ def optimise(code: list, BITS: int) -> list:
     else:
         code = returnedCode
 
+    # optimise JMP to conditional branch
+    oldCode = [i for i in code]
+    returnedCode = optimiseJMPBranch(code)
+    if oldCode != returnedCode:
+        return returnedCode
+    else:
+        code = returnedCode
+
     return code
+
+def optimiseJMPBranch(code: list) -> list:
+    for i, j in enumerate(code):
+        if j.startswith("JMP"):
+            label = j[4:]
+            found = False
+            for k, l in enumerate(code):
+                if l == label:
+                    found = True
+                elif found:
+                    label2 = l[l.find(" ") + 1: ][: l[l.find(" ") + 1: ].find(",")]
+                    if label2 == code[i + 1]:
+                        opCode = l[: l.find(" ")]
+                        newOpCode = opposite(opCode)
+                        newLabel = ".shortcut" + uniqueNumber()
+                        code[i] = newOpCode + " " + newLabel + l[l.find(","): ]
+                        code.insert(k + 1, newLabel)
+                        return code
+                    break
+    return code
+
+def opposite(opCode):
+    if opCode == "BGE":
+        return "BRL"
+    elif opCode == "BLE":
+        return "BRG"
+    elif opCode == "BRG":
+        return "BLE"
+    elif opCode == "BRL":
+        return "BGE"
+    elif opCode == "BRE":
+        return "BNE"
+    elif opCode == "BNE":
+        return "BRE"
+    elif opCode == "BOD":
+        return "BEV"
+    elif opCode == "BEV":
+        return "BOD"
+    elif opCode == "BRP":
+        return "BRN"
+    elif opCode == "BRN":
+        return "BRP"
+    elif opCode == "BRC":
+        return "BNC"
+    elif opCode == "BNC":
+        return "BRC"
+    else:
+        raise Exception("FATAL - Unrecognised branch: " + opCode)
 
 def optimiseUniqueCAL(code: list) -> list:
     for i, j in enumerate(code):
