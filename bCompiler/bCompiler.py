@@ -7,10 +7,10 @@
 # 5: Compiler Optimisations
 # 6: General Optimisations
 
-from bCompiler2.generateURCL import generateURCL
-from bCompiler2.reversePolish import reversePolish
-from bCompiler2.preprocess import preprocess
-from bCompiler2.tokeniser import tokenise
+from bCompiler.generateURCL import generateURCL
+from bCompiler.reversePolish import reversePolish
+from bCompiler.preprocess import preprocess
+from bCompiler.tokeniser import tokenise
 
 def bCompiler2(raw: str) -> str:
     """

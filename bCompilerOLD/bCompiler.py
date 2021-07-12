@@ -1,9 +1,9 @@
-from bCompiler.generateURCL import generateURCL
-from bCompiler.reversePolish import reversePolish
-from bCompiler.cleanCode import cleanCode
-from bCompiler.tokenizer import tokenize
-from bCompiler.optimiser import optimise
-from bCompiler.headers import headers
+from bCompilerOLD.generateURCL import generateURCL
+from bCompilerOLD.reversePolish import reversePolish
+from bCompilerOLD.cleanCode import cleanCode
+from bCompilerOLD.tokenizer import tokenize
+from bCompilerOLD.optimiser import optimise
+from bCompilerOLD.headers import headers
 
 def compile(raw: str, length: int, reg: int) -> str:
     
