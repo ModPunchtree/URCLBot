@@ -51,7 +51,7 @@ async def on_message(message):
             await message.channel.send("ERROR: \n" + str(x))
             return
         f = open("output.txt", "w")
-        f.write(text)
+        f.write("\n".join(text))
         f.close()
         await message.channel.send(file=discord.File("output.txt"))
         return
