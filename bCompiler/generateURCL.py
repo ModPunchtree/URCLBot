@@ -66,6 +66,8 @@ def generateURCL(tokens_: list, tokenMap: list, allVariables: list, allFunctions
         elif token == "$while":
             number = lastWhile()
             fetch1 = optimisedFetch(tokens[tokenNumber - 1])
+            if tokens[tokenNumber - 1].startswith("TEMP"):
+                delVar(tokens[tokenNumber - 1])
             output.append("BRZ .whileEnd_" + number + " " + fetch1)
             output.append(".whileBody_" + number)
             tokens.pop(tokenNumber); tokens.pop(tokenNumber - 1); tokenNumber = 0
@@ -73,6 +75,8 @@ def generateURCL(tokens_: list, tokenMap: list, allVariables: list, allFunctions
         elif token == "$if":
             number = lastIf()
             fetch1 = optimisedFetch(tokens[tokenNumber - 1])
+            if tokens[tokenNumber - 1].startswith("TEMP"):
+                delVar(tokens[tokenNumber - 1])
             output.append("BRZ .elseStart_" + str(int(number) + 1) + " " + fetch1)
             output.append(".ifBody_" + number)
             tokens.pop(tokenNumber); tokens.pop(tokenNumber - 1); tokenNumber = 0
@@ -80,6 +84,8 @@ def generateURCL(tokens_: list, tokenMap: list, allVariables: list, allFunctions
         elif token == "$elseif":
             number = lastElseIfOrIf()
             fetch1 = optimisedFetch(tokens[tokenNumber - 1])
+            if tokens[tokenNumber - 1].startswith("TEMP"):
+                delVar(tokens[tokenNumber - 1])
             output.append("BRZ .elseStart_" + str(int(number) + 1) + " " + fetch1)
             output.append(".ifBody_" + number)
             tokens.pop(tokenNumber); tokens.pop(tokenNumber - 1); tokenNumber = 0
@@ -87,6 +93,8 @@ def generateURCL(tokens_: list, tokenMap: list, allVariables: list, allFunctions
         elif token == "$return":
             output.append("INC SP SP")
             fetch1 = optimisedFetch(tokens[tokenNumber - 1])
+            if tokens[tokenNumber - 1].startswith("TEMP"):
+                delVar(tokens[tokenNumber - 1])
             output.append("STR SP " + fetch1)
             output.append("DEC SP SP")
             output.append("RET")
@@ -108,20 +116,20 @@ def generateURCL(tokens_: list, tokenMap: list, allVariables: list, allFunctions
                 squigglyStack.append(["elseif", number])
                 output.append(".elseStart_" + number)
                 output.append(".ifHead_" + number)
-                tokens.pop(tokenNumber); tokens.pop(tokenNumber - 1); tokenNumber = 0
+                tokens.pop(tokenNumber + 1); tokens.pop(tokenNumber); tokenNumber = 0
             elif nextToken == "else":
                 number = lastIf()
                 output.append("JMP .elseEnd_" + number)
                 number = str(int(lastElseIfOrIf()) + 1)
                 squigglyStack.append(["else", number])
                 output.append(".elseStart_" + number)
-                tokens.pop(tokenNumber); tokens.pop(tokenNumber - 1); tokenNumber = 0
+                tokens.pop(tokenNumber + 1); tokens.pop(tokenNumber); tokenNumber = 0
             elif squigglyStack[-1][0] in ("if", "elseif", "else"):
                 number = str(int(lastElseOrElseIfOrIf()) + 1)
                 output.append(".elseStart_" + number)
                 output.append(".elseEnd_" + lastIf())
                 popAllConditionsOffSquigglyStack()
-                tokens.pop(tokenNumber); tokenNumber = 0
+                tokens.pop(tokenNumber + 1); tokens.pop(tokenNumber); tokenNumber = 0
             elif type(squigglyStack[-1]) == str: # end of function definition
                 output.append("INC SP SP")
                 output.append("STR SP 0")
@@ -141,6 +149,8 @@ def generateURCL(tokens_: list, tokenMap: list, allVariables: list, allFunctions
         elif token == "€while":
             number = lastWhile()
             fetch1 = optimisedFetch(tokens[tokenNumber - 1])
+            if tokens[tokenNumber - 1].startswith("TEMP"):
+                delVar(tokens[tokenNumber - 1])
             output.append("BNZ .whileBody_" + number + " " + fetch1)
             output.append(".whileEnd_" + number)
             tokens.pop(tokenNumber); tokens.pop(tokenNumber - 1); tokenNumber = 0
@@ -177,6 +187,8 @@ def generateURCL(tokens_: list, tokenMap: list, allVariables: list, allFunctions
                 output.append("DEC SP SP")
             for i in range(numberOfInputs):
                 fetch1 = optimisedFetch(tokens[tokenNumber - 1 - i])
+                if tokens[tokenNumber - 1].startswith("TEMP"):
+                    delVar(tokens[tokenNumber - 1])
                 output.append("PSH " + fetch1)
                 if tokens[tokenNumber - 1 - i].startswith("TEMP"):
                     delVar(tokens[tokenNumber - 1 - i])
@@ -323,6 +335,8 @@ def generateURCL(tokens_: list, tokenMap: list, allVariables: list, allFunctions
                     else: # %array
                         oldIndex = tokens[tokenNumber - 3]
                         arrayIndex = optimisedFetch(tokens[tokenNumber - 3])
+                        if tokens[tokenNumber - 3].startswith("TEMP"):
+                            delVar(tokens[tokenNumber - 3])
                         arrayName = tokens[tokenNumber - 2]
                         output.append("ADD " + arrayIndex + " " + arrayIndex + " " + str(getArrayOrigin(arrayName[1: ])))
                         output.append("STR " + arrayIndex + " " + tokens[tokenNumber - 1])
@@ -335,11 +349,17 @@ def generateURCL(tokens_: list, tokenMap: list, allVariables: list, allFunctions
                     if not tokens[tokenNumber - 2].startswith("%"):
                         arrayFlag = False
                         target = optimisedFetch(tokens[tokenNumber - 2])
+                        if tokens[tokenNumber - 1].startswith("TEMP"):
+                            delVar(tokens[tokenNumber - 1])
                         output.append("MOV " + target + " " + fetch1)
                     else:
                         arrayFlag = True
                         oldIndex = tokens[tokenNumber - 3]
                         arrayIndex = optimisedFetch(tokens[tokenNumber - 3])
+                        if tokens[tokenNumber - 1].startswith("TEMP"):
+                            delVar(tokens[tokenNumber - 1])
+                        if tokens[tokenNumber - 3].startswith("TEMP"):
+                            delVar(tokens[tokenNumber - 3])
                         arrayName = tokens[tokenNumber - 2]
                         output.append("ADD " + arrayIndex + " " + arrayIndex + " " + str(getArrayOrigin(arrayName[1: ])))
                         output.append("STR " + arrayIndex + " " + fetch1)
@@ -399,6 +419,8 @@ def generateURCL(tokens_: list, tokenMap: list, allVariables: list, allFunctions
                     if not tokens[tokenNumber - 2].startswith("%"):
                         arrayFlag = False
                         target = optimisedFetch(tokens[tokenNumber - 2])
+                        if tokens[tokenNumber - 1].startswith("TEMP"):
+                            delVar(tokens[tokenNumber - 1])
                     else: # %array
                         arrayFlag = True
                         arrayName = tokens[tokenNumber - 2]
@@ -406,6 +428,8 @@ def generateURCL(tokens_: list, tokenMap: list, allVariables: list, allFunctions
                         fetch1 = optimisedFetch(tokens[tokenNumber - 3])
                         if tokens[tokenNumber - 3].startswith("TEMP"):
                             delVar(tokens[tokenNumber - 3])
+                        if tokens[tokenNumber - 1].startswith("TEMP"):
+                            delVar(tokens[tokenNumber - 1])
                         tempName = createTEMP(arrayType)
                         temp = optimisedFetch(tempName)
                         tempName2 = createTEMP(arrayType)
