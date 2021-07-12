@@ -31,5 +31,5 @@ print(emulate(text, True, False))
 
 #print(emulate(code[5: ].upper(), True, False))
 
-#print(bCompiler(code))
+#print("\n".join(bCompiler(code)))
 print("\n".join(genericURCLoptimiser([i.replace(" ", ",").replace(",", " ", 1).replace(",", ", ") for i in bCompiler(code)], 8)))

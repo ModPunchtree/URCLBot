@@ -1,5 +1,7 @@
 $B 8, 8
 
-auto a[] = {1, 2};
-auto b = a[1];
+auto a = 0;
+while (a < 5) {
+    a += 1;
+}
 

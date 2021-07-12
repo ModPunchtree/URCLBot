@@ -45,6 +45,9 @@ def bCompiler(raw: str) -> str:
             arrays = arrays[0]
     output = generateURCL(tokens, tokenMap, variables, functions, arrays, MINREG, BITS)
 
+    if output[-1] != "HLT":
+        output.append("HLT")
+
     return output
 
 def cleanCode(raw: str) -> tuple:

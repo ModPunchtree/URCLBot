@@ -231,6 +231,14 @@ def optimise(code: list, BITS: int) -> list:
     else:
         code = returnedCode
 
+    # SETBranch
+    oldCode = [i for i in code]
+    returnedCode = SETBRZOrBNZ(code)
+    if oldCode != returnedCode:
+        return returnedCode
+    else:
+        code = returnedCode
+
     return code
 
 def optimiseJMPBranch(code: list) -> list:
@@ -1449,6 +1457,96 @@ def miscellaneousOptimisations(code: list, BITS: int) -> list:
     else:
         code = returnedCode
 
+    return code
+
+def SETBRZOrBNZ(code: list) -> list:
+    for i, j in enumerate(code):
+        if i == len(code) - 1:
+            break
+        if j.startswith("SET"):
+            firstOp = j[j.index(" ") + 1: ]
+            firstOp = firstOp[: firstOp.index(",")]
+            if j.startswith("SETL"):
+                if code[i + 1].startswith("BRZ"):
+                    label = code[i + 1][4: code[i + 1].index(",")]
+                    if label.startswith((".if", ".else", ".while")):
+                        code[i] = "BGE " + label + j[j.index(","): ]
+                        code.pop(i + 1)
+                        return SETBRZOrBNZ(code)
+                if code[i + 1].startswith("BNZ"):
+                    label = code[i + 1][4: code[i + 1].index(",")]
+                    if label.startswith((".if", ".else", ".while")):
+                        code[i] = "BRL " + label + j[j.index(","): ]
+                        code.pop(i + 1)
+                        return SETBRZOrBNZ(code)
+            elif j.startswith("SETLE"):
+                if code[i + 1].startswith("BRZ"):
+                    label = code[i + 1][4: code[i + 1].index(",")]
+                    if label.startswith((".if", ".else", ".while")):
+                        code[i] = "BRG " + label + j[j.index(","): ]
+                        code.pop(i + 1)
+                        return SETBRZOrBNZ(code)
+                if code[i + 1].startswith("BNZ"):
+                    label = code[i + 1][4: code[i + 1].index(",")]
+                    if label.startswith((".if", ".else", ".while")):
+                        code[i] = "BLE " + label + j[j.index(","): ]
+                        code.pop(i + 1)
+                        return SETBRZOrBNZ(code)
+            elif j.startswith("SETG"):
+                if code[i + 1].startswith("BRZ"):
+                    label = code[i + 1][4: code[i + 1].index(",")]
+                    if label.startswith((".if", ".else", ".while")):
+                        code[i] = "BLE " + label + j[j.index(","): ]
+                        code.pop(i + 1)
+                        return SETBRZOrBNZ(code)
+                if code[i + 1].startswith("BNZ"):
+                    label = code[i + 1][4: code[i + 1].index(",")]
+                    if label.startswith((".if", ".else", ".while")):
+                        code[i] = "BRG " + label + j[j.index(","): ]
+                        code.pop(i + 1)
+                        return SETBRZOrBNZ(code)
+            elif j.startswith("SETGE"):
+                if code[i + 1].startswith("BRZ"):
+                    label = code[i + 1][4: code[i + 1].index(",")]
+                    if label.startswith((".if", ".else", ".while")):
+                        code[i] = "BRL " + label + j[j.index(","): ]
+                        code.pop(i + 1)
+                        return SETBRZOrBNZ(code)
+                if code[i + 1].startswith("BNZ"):
+                    label = code[i + 1][4: code[i + 1].index(",")]
+                    if label.startswith((".if", ".else", ".while")):
+                        code[i] = "BGE " + label + j[j.index(","): ]
+                        code.pop(i + 1)
+                        return SETBRZOrBNZ(code)
+            elif j.startswith("SETE"):
+                if code[i + 1].startswith("BRZ"):
+                    label = code[i + 1][4: code[i + 1].index(",")]
+                    if label.startswith((".if", ".else", ".while")):
+                        code[i] = "BNE " + label + j[j.index(","): ]
+                        code.pop(i + 1)
+                        return SETBRZOrBNZ(code)
+                if code[i + 1].startswith("BNZ"):
+                    label = code[i + 1][4: code[i + 1].index(",")]
+                    if label.startswith((".if", ".else", ".while")):
+                        code[i] = "BRE " + label + j[j.index(","): ]
+                        code.pop(i + 1)
+                        return SETBRZOrBNZ(code)
+            elif j.startswith("SETNE"):
+                if code[i + 1].startswith("BRZ"):
+                    label = code[i + 1][4: code[i + 1].index(",")]
+                    if label.startswith((".if", ".else", ".while")):
+                        code[i] = "BRE " + label + j[j.index(","): ]
+                        code.pop(i + 1)
+                        return SETBRZOrBNZ(code)
+                if code[i + 1].startswith("BNZ"):
+                    label = code[i + 1][4: code[i + 1].index(",")]
+                    if label.startswith((".if", ".else", ".while")):
+                        code[i] = "BNE " + label + j[j.index(","): ]
+                        code.pop(i + 1)
+                        return SETBRZOrBNZ(code)
+            else:
+                raise Exception()
+            
     return code
 
 def repeatedADDSUB(code: list) -> list:

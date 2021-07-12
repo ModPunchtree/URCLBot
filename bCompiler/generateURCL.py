@@ -66,7 +66,7 @@ def generateURCL(tokens_: list, tokenMap: list, allVariables: list, allFunctions
         elif token == "$while":
             number = lastWhile()
             fetch1 = optimisedFetch(tokens[tokenNumber - 1])
-            output.append("BRZ .whileEnd_" + str(int(number) + 1) + " " + fetch1)
+            output.append("BRZ .whileEnd_" + number + " " + fetch1)
             output.append(".whileBody_" + number)
             tokens.pop(tokenNumber); tokens.pop(tokenNumber - 1); tokenNumber = 0
         
@@ -246,9 +246,14 @@ def generateURCL(tokens_: list, tokenMap: list, allVariables: list, allFunctions
                 tokens.pop(tokenNumber); tokens[tokenNumber - 1] = temp; tokenNumber = 0
 
         elif token in ("||", "&&", "|", "binary&", "!=", "==", ">=", ">", "<=", "<", ">>", "<<", "binary-", "binary+", "%", "/", "binary*"):
-            type1 = getVariableType(tokens[tokenNumber - 2])
-            type2 = getVariableType(tokens[tokenNumber - 1])
-            if type1 != type2:
+            type1 = "constant"
+            type2 = "constant"
+            if not tokens[tokenNumber - 2][0].isnumeric():
+                type1 = getVariableType(tokens[tokenNumber - 2])
+            if not tokens[tokenNumber - 1][0].isnumeric():
+                type2 = getVariableType(tokens[tokenNumber - 1])
+            
+            if (type1 != type2) and (type1 != "constant") and (type2 != "constant"):
                 raise Exception("FATAL - Cannot do " + token + " with types: " + type1 + " and " + type2)
             fetch1 = optimisedFetch(tokens[tokenNumber - 2])
             fetch2 = optimisedFetch(tokens[tokenNumber - 1])
@@ -257,7 +262,7 @@ def generateURCL(tokens_: list, tokenMap: list, allVariables: list, allFunctions
             if tokens[tokenNumber - 2].startswith("TEMP"):
                 delVar(tokens[tokenNumber - 2])
             temp = createTEMP(type1)
-            tempLocation = optimisedFetch(tempLocation)
+            tempLocation = optimisedFetch(temp)
             if token == "||":
                 output.append("OR " + tempLocation + " " + fetch1 + " " + fetch2)
                 output.append("SETNE " + tempLocation + " " + tempLocation + " 0")
@@ -604,10 +609,16 @@ def delVar(name: str) -> None:
         raise Exception("FATAL - Tried to delete variable which does not exist: " + name)
 
 def getVariableType(name: str) -> str:
-    return variables[[i[0] for i in variables].index(name)][1]
+    try:
+        return variables[[i[0] for i in variables].index(name)][1]
+    except:
+        return variables[[i[0] for i in variables].index(name + "_" + functionScope)][1]
 
 def getArrayLength(name: str) -> str:
-    return arrays[[i[0] for i in arrays].index(name)][2]
+    try:
+        return arrays[[i[0] for i in arrays].index(name)][2]
+    except:
+        return arrays[[i[0] for i in arrays].index(name + "_" + functionScope)][2]
 
 def previousFunctionScope() -> str:
     num = len(squigglyStack) - 1
@@ -618,10 +629,13 @@ def previousFunctionScope() -> str:
     raise Exception("FATAL - Failed to find previous function scope")
 
 def getFunctionType(name: str) -> str:
-    return functions[[i[0] for i in functions].index(name)][1]
+    try:
+        return functions[[i[0] for i in functions].index(name)][1]
+    except:
+        return functions[[i[0] for i in functions].index(name + "_" + functionScope)][1]
 
 def lastWhile() -> str:
-    num = len(squigglyStack)
+    num = len(squigglyStack) - 1
     while num > -1:
         if squigglyStack[num][0] == "while":
             return squigglyStack[num][1]
@@ -629,7 +643,7 @@ def lastWhile() -> str:
     raise Exception("FATAL - Failed to find previous while statement")
 
 def lastWhileConditions() -> list:
-    num = len(squigglyStack)
+    num = len(squigglyStack) - 1
     while num > -1:
         if squigglyStack[num][0] == "while":
             return squigglyStack[num][2]
@@ -637,7 +651,7 @@ def lastWhileConditions() -> list:
     raise Exception("FATAL - Failed to find previous while statement")
 
 def lastIf() -> str:
-    num = len(squigglyStack)
+    num = len(squigglyStack) - 1
     while num > -1:
         if squigglyStack[num][0] == "if":
             return squigglyStack[num][1]
@@ -645,7 +659,7 @@ def lastIf() -> str:
     raise Exception("FATAL - Failed to find previous if statement")
 
 def lastElseIfOrIf() -> str:
-    num = len(squigglyStack)
+    num = len(squigglyStack) - 1
     while num > -1:
         if squigglyStack[num][0] in ("if", "elseif"):
             return squigglyStack[num][1]
@@ -653,7 +667,7 @@ def lastElseIfOrIf() -> str:
     raise Exception("FATAL - Failed to find previous 'if' or 'else if' statement")
 
 def lastElseOrElseIfOrIf() -> str:
-    num = len(squigglyStack)
+    num = len(squigglyStack) - 1
     while num > -1:
         if squigglyStack[num][0] in ("if", "elseif", "else"):
             return squigglyStack[num][1]
@@ -661,7 +675,7 @@ def lastElseOrElseIfOrIf() -> str:
     raise Exception("FATAL - Failed to find previous 'if', 'else if' or 'else' statement")
 
 def popAllConditionsOffSquigglyStack() -> None:
-    num = len(squigglyStack)
+    num = len(squigglyStack) - 1
     while num > -1:
         if squigglyStack[num][0] == "if":
             squigglyStack.pop(num)
