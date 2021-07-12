@@ -46,7 +46,7 @@ async def on_message(message):
     elif message.content.startswith("$BAD"):
         await message.channel.send("Compiling...")
         try:
-            text = bCompiler(message.content)
+            text = bCompiler("$B" + message.content[4:])
         except Exception as x:
             await message.channel.send("ERROR: \n" + str(x))
             return
