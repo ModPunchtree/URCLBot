@@ -1,4 +1,4 @@
-from bCompiler.constants import alpha, operators, split
+from bCompilerOLD.constants import alpha, operators, split
 
 def tokenize(code: str) -> tuple:
     

@@ -1,5 +1,5 @@
 
-from bCompiler.constants import alpha, assignmentOperators, binaryOperators, numeric, operators, unaryOperators
+from bCompilerOLD.constants import alpha, assignmentOperators, binaryOperators, numeric, operators, unaryOperators
 
 def fetch(variable: str) -> str:
     global useNumber

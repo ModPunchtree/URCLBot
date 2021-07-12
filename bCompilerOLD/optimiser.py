@@ -1,5 +1,5 @@
 
-from bCompiler.constants import URCLOperations
+from bCompilerOLD.constants import URCLOperations
 
 def JMPtoJMP() -> None:
     line = 0

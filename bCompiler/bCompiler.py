@@ -12,7 +12,7 @@ from bCompiler.reversePolish import reversePolish
 from bCompiler.preprocess import preprocess
 from bCompiler.tokeniser import tokenise
 
-def bCompiler2(raw: str) -> str:
+def bCompiler(raw: str) -> str:
     """
     Converts raw text into B code or an error.
     Returns a string.
