@@ -2,7 +2,7 @@
 # 1: convert to reverse polish using shunting yard
 # 2: return tokens, tokenMap
 
-from bCompiler2.constants import operators
+from bCompiler.constants import operators
 
 def reversePolish(variables: list, arrays: list, functions: list, tokens: list, tokenMap: list) -> tuple:
 
