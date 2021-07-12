@@ -44,7 +44,7 @@ def reversePolish(variables: list, arrays: list, functions: list, tokens: list, 
             if topOp() in [i[0] for i in functions]:
                 output.append(operator.pop())
                 tokenMapOutput.append(tokenMapOperator.pop())
-            if topOp().startswith("$"):
+            if topOp().startswith("$") and (topOp() != "$return"):
                 output.append(operator.pop())
                 tokenMapOutput.append(tokenMapOperator.pop())
                 if topOp() in ("auto", "auto*"):
