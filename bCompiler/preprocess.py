@@ -17,6 +17,28 @@ def preprocess(tokens: list, tokenMap: list, code: str, BITS: int) -> tuple:
     if semicolonMissing(tokens, tokenMap):
         raise Exception("FATAL - Missing ; in code:\n" + code[int(semicolonMissing(tokens, tokenMap)) - 15: int(semicolonMissing(tokens, tokenMap)) + 15] + "\n" + " "*15 + "^")
 
+    # fix asm
+    i = 0
+    while i < len(tokens):
+        j = tokens[i]
+        if j == "asm":
+            temp = []
+            temp2 = []
+            for k, l in enumerate(tokens[i + 2: ]):
+                if l == "}":
+                    if temp2:
+                        temp.append(temp2)
+                    tokens = tokens[: i + 1] + [temp] + tokens[i + 2 + k + 1: ]
+                    tokenMap = tokenMap[: i + 2] + tokenMap[i + 2 + k + 1: ]
+                    i = -1
+                    break
+                elif l == ";":
+                    temp.append(temp2)
+                    temp2 = []
+                else:
+                    temp2.append(l)
+        i += 1
+
     # 3: find variables (including arrays) and functions
     global variables
     variables, arrays, functions = findIdentifiers(tokens, tokenMap)
@@ -112,8 +134,9 @@ def findIdentifiers(tokens: list, tokenMap: list) -> tuple:
     arrays = []
     functions = []
     for i, j in enumerate(tokens):
-
-        if j[0].isalpha():
+        if type(j) == list:
+            pass
+        elif j[0].isalpha():
             if tokens[i - 1] == "auto" or (tokens[i - 2] == "auto" and tokens[i - 1] == "*"):
                 if tokens[i + 1] == "(":
                     operands = countCommasBetweenBrackets(tokens, i + 2)
@@ -132,6 +155,8 @@ def findIdentifiers(tokens: list, tokenMap: list) -> tuple:
                     length = int(tokens[i + 2])
                     arrays.append([j, "auto", length])
                     tokens[i] = "%" + j
+                elif (i + 2) >= len(tokens):
+                    variables.append([j, "auto"])
                 elif tokens[i + 2] == "[":
                     indexOfCloseSquare = findIndexOfCloseSquare(tokens, i + 3)
                     if tokens[indexOfCloseSquare + 1] == "=" and tokens[indexOfCloseSquare + 2] == "{":
@@ -161,7 +186,7 @@ def findIdentifiers(tokens: list, tokenMap: list) -> tuple:
             
             if j in [i[0] for i in arrays]:
                 close = closeSquare(tokens, i + 1)
-                if tokens[close] == "=":
+                if tokens[close] in (">>=", "<<=", "^=", "|=", "&=", "%=", "/=", "*=", "-=", "+=", "="):
                     tokens[i] = "%" + j
             
 
@@ -170,9 +195,11 @@ def findIdentifiers(tokens: list, tokenMap: list) -> tuple:
 
 def undefinedIdentifier(tokens: list, tokenMap: list, variables: list, arrays: list, functions: list) -> str:
     for i, j in enumerate(tokens):
-        if j[0].isalpha():
-            if j not in [i[0] for i in variables + arrays + functions] + ["auto", "delete", "return", "asm", "if", "else", "while"]:
-                return str(tokenMap[i])
+        j = tokens[i]
+        if type(j) == str:
+            if j[0].isalpha():
+                if j not in [i[0] for i in variables + arrays + functions] + ["auto", "delete", "return", "asm", "if", "else", "while"]:
+                    return str(tokenMap[i])
     return ""
 
 def unambigify(tokens: list, tokenMap: list) -> tuple:
@@ -228,14 +255,18 @@ def unambigify(tokens: list, tokenMap: list) -> tuple:
 
 def numbersDontFitInBITS(tokens: list, tokenMap: list, BITS: int) -> str:
     for i, j in enumerate(tokens):
-        if j[0].isnumeric():
+        if type(j) == list:
+            pass
+        elif j[0].isnumeric():
             if int(j, 0) >= 2 ** BITS:
                 return str(tokenMap[i])
     return ""
 
 def invalidSymbol(tokens: list, tokenMap: list) -> str:
     for i, j in enumerate(tokens):
-        if (not(j[0].isalpha())) and (j[0] != "_") and (j[0] not in ("£", "%")) and (j[0] not in "({[]});") and (not(j[0].isnumeric())):
+        if type(j) == list:
+            pass
+        elif (not(j[0].isalpha())) and (j[0] != "_") and (j[0] not in ("£", "%")) and (j[0] not in "({[]});") and (not(j[0].isnumeric())):
             if j not in ("!", "~", "unary-", "unary+", "unary*", "sizeof", "binary*", "/", "%", "binary+", "binary-", "<<", ">>", "<", "<=", ">", ">=", "==", "!=", "&", "^", "|", "&&", "||", "=", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=", ">>=", ","):
                 return str(tokenMap[i])
     return ""

@@ -1,9 +1,6 @@
-$B 8, 2
+$B 8, 8
 
-auto a = 1;
-while (a < 200) {
-    a = a + 1;
-    auto b = 5;
-    auto c = 6;
-    auto d = 7;
+auto main() {
+    auto a;
 }
+

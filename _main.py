@@ -1,9 +1,9 @@
 # main file for offline testing
 
-from bCompiler2.bCompiler import bCompiler2
+from bCompiler.bCompiler import bCompiler
 from genericURCLOptimiser.genericURCLOptimiser import genericURCLoptimiser
 from URCLEmulator.URCLEmulator import emulate
-from bCompiler.bCompiler import compile
+from bCompilerOLD.bCompiler import compile
 from MPU6Transpiler.MPU6Transpiler import MPU6Transpile
 
 f = open("offlineInput.txt", "r+")
@@ -14,7 +14,7 @@ code = f.read()
 #print(MPU6Transpile(code))
 
 #print(compile(code[7:], 8, 2))
-print("\n".join(genericURCLoptimiser(compile(code[7:], 8, 2), 8)))
+#print("\n".join(genericURCLoptimiser(compile(code[7:], 8, 2), 8)))
 
 """
 text = code[5: ]
@@ -31,4 +31,4 @@ print(emulate(text, True, False))
 
 #print(emulate(code[5: ].upper(), True, False))
 
-#print(bCompiler2(code))
+print(bCompiler(code))

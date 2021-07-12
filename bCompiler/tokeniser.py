@@ -61,7 +61,7 @@ def readNum(code: str, num: int) -> str:
 def readIdentifier(code: str, num: int) -> str:
     answer = ""
     while num < len(code):
-        if code[num].isalpha() or code[num] == "_":
+        if code[num].isalpha() or code[num] == "_" or code[num].isnumeric():
             answer += code[num]
             num += 1
         else:
