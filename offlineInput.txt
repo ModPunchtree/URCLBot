@@ -1,7 +1,7 @@
 $B 8, 8
 
 auto a = 0;
-while (a < 5) {
+if (a < 5) {
     a += 1;
 }
 

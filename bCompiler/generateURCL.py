@@ -117,7 +117,7 @@ def generateURCL(tokens_: list, tokenMap: list, allVariables: list, allFunctions
                 output.append(".elseStart_" + number)
                 tokens.pop(tokenNumber); tokens.pop(tokenNumber - 1); tokenNumber = 0
             elif squigglyStack[-1][0] in ("if", "elseif", "else"):
-                number = lastElseOrElseIfOrIf() + 1
+                number = str(int(lastElseOrElseIfOrIf()) + 1)
                 output.append(".elseStart_" + number)
                 output.append(".elseEnd_" + lastIf())
                 popAllConditionsOffSquigglyStack()
