@@ -183,16 +183,19 @@ def generateURCL(tokens_: list, tokenMap: list, allVariables: list, allFunctions
             try:
                 numberOfInputs = functions[[i[0] for i in functions].index(temp69)][2]
             except:
-                numberOfInputs = functions[[i[0] for i in functions].index(temp69 + "_" + functionScope)][2]
+                try:
+                    numberOfInputs = functions[[i[0] for i in functions].index(temp69 + "_" + functionScope)][2]
+                except:
+                    numberOfInputs = functions[[i[0] for i in functions].index(temp69 + "_" + previousFunctionScope())][2]
             if numberOfInputs == 0:
                 output.append("DEC SP SP")
+            deleted = []
             for i in range(numberOfInputs):
                 fetch1 = optimisedFetch(tokens[tokenNumber - 1 - i])
-                if tokens[tokenNumber - 1].startswith("TEMP"):
-                    delVar(tokens[tokenNumber - 1])
                 output.append("PSH " + fetch1)
                 if tokens[tokenNumber - 1 - i].startswith("TEMP"):
                     delVar(tokens[tokenNumber - 1 - i])
+                    deleted.append(tokens[tokenNumber - 1 - i])
                 tokens.pop(tokenNumber - 1 - i)
             tokenNumber -= numberOfInputs
             output.append("CAL ." + funcName)
@@ -205,7 +208,10 @@ def generateURCL(tokens_: list, tokenMap: list, allVariables: list, allFunctions
             else:
                 output.append("ADD SP SP " + str(numberOfInputs - 1))
             if recursive:
-                for i in locals[-1]:
+                for i in deleted:
+                    if i in locals:
+                        locals.pop(locals.index(i))
+                for i in locals[:: -1]:
                     fetch1 = optimisedFetch(i)
                     output.append("POP " + fetch1)
             tokenNumber = 0
@@ -657,12 +663,12 @@ def getArrayLength(name: str) -> str:
         return arrays[[i[0] for i in arrays].index(name + "_" + functionScope)][2]
 
 def previousFunctionScope() -> str:
-    num = len(squigglyStack) - 1
+    num = len(squigglyStack) - 2
     while num > -1:
         if type(squigglyStack[num]) == str:
             return squigglyStack[num]
         num -= 1
-    raise Exception("FATAL - Failed to find previous function scope")
+    return "global"
 
 def getFunctionType(name: str) -> str:
     try:
