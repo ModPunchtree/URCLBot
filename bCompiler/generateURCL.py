@@ -436,7 +436,7 @@ def generateURCL(tokens_: list, tokenMap: list, allVariables: list, allFunctions
                         output.append("STR " + temp + " " + target)
                     tokens.pop(tokenNumber); tokens.pop(tokenNumber - 1); tokens.pop(tokenNumber - 2); tokenNumber = 0
         
-        elif token in definedArrays:
+        elif (token + "_" + functionScope) in definedArrays:
             type1 = getArrayType(token)
             tempName = createTEMP(type1)
             temp = optimisedFetch(tempName)
@@ -580,7 +580,10 @@ def createTEMP(type: str) -> str:
     return createVariable(name, type)
 
 def getArrayType(name: str) -> str:
-    return arrays[[i[0] for i in arrays].index(name)][1]
+    try:
+        return arrays[[i[0] for i in arrays].index(name)][1]
+    except:
+        return arrays[[i[0] for i in arrays].index(name + "_" + functionScope)][1]
 
 def getArrayOrigin(name: str) -> int:
     try:

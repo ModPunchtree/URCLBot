@@ -1,6 +1,5 @@
 $B 8, 8
 
-auto main() {
-    auto a;
-}
+auto a[] = {1, 2};
+auto b = a[1];
 
