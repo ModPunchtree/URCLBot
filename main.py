@@ -7,7 +7,7 @@ import os
 from random import randint
 from keep_alive import keep_alive
 import asyncio
-from bCompiler.bCompiler import compile
+from bCompiler.bCompiler import bCompiler
 from MPU6Transpiler.MPU6Transpiler import MPU6Transpile
 
 client = discord.Client()
@@ -45,24 +45,8 @@ async def on_message(message):
 
     elif message.content.startswith("$BAD"):
         await message.channel.send("Compiling...")
-        if len(message.content) > 2:
-            text = message.content[5:message.content.index("\n")]
-            if text.find(" ") != -1:
-                text1 = text[:text.find(" ")]
-                text2 = text[text.find(" ") + 1:]
-            else:
-                text1 = text
-                text2 = "2"
-            if text1.isnumeric():
-                BITS = text1
-            else:
-                BITS = "8"
-            text = message.content[message.content.index("\n"):]
-        else:
-            BITS = "8"
-            text = message.content[2:]
         try:
-            text = compile(text, int(BITS), int(text2))
+            text = bCompiler(message.content)
         except Exception as x:
             await message.channel.send("ERROR: \n" + str(x))
             return
@@ -75,13 +59,13 @@ async def on_message(message):
     elif message.content.startswith("$B"):
         await message.channel.send("Compiling...")
         if len(message.content) > 2:
-            text = message.content[3:message.content.index("\n")]
+            text = message.content[3: message.content.index("\n")]
             if text.find(" ") != -1:
                 text1 = text[:text.find(" ")]
                 text2 = text[text.find(" ") + 1:]
             else:
                 text1 = text
-                text2 = "2"
+                text2 = "8"
             if text1.isnumeric():
                 BITS = text1
             else:
@@ -91,7 +75,7 @@ async def on_message(message):
             BITS = "8"
             text = message.content[2:]
         try:
-            text = compile(text, int(BITS), int(text2))
+            text = bCompiler(message.content)
         except Exception as x:
             await message.channel.send("ERROR: \n" + str(x))
             return
