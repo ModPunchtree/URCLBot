@@ -157,6 +157,7 @@ def generateURCL(tokens_: list, tokenMap: list, allVariables: list, allFunctions
         
         elif listOfPotentialFunctions(token):
             temp = listOfPotentialFunctions(token)
+            temp69 = str(token)
             if token + "_" + functionScope in temp:
                 funcName = token + "_" + functionScope
             elif token + "_" + previousFunctionScope() in temp:
@@ -180,9 +181,9 @@ def generateURCL(tokens_: list, tokenMap: list, allVariables: list, allFunctions
                     fetch1 = optimisedFetch(i)
                     output.append("PSH " + fetch1)
             try:
-                numberOfInputs = functions[[i[0] for i in functions].index(token)][2]
+                numberOfInputs = functions[[i[0] for i in functions].index(temp69)][2]
             except:
-                numberOfInputs = functions[[i[0] for i in functions].index(token + "_" + functionScope)][2]
+                numberOfInputs = functions[[i[0] for i in functions].index(temp69 + "_" + functionScope)][2]
             if numberOfInputs == 0:
                 output.append("DEC SP SP")
             for i in range(numberOfInputs):
@@ -199,6 +200,10 @@ def generateURCL(tokens_: list, tokenMap: list, allVariables: list, allFunctions
             fetch1 = optimisedFetch(temp)
             output.append("POP " + fetch1)
             tokens[tokenNumber] = temp
+            if (numberOfInputs == 0) or (numberOfInputs == 1):
+                pass
+            else:
+                output.append("ADD SP SP " + str(numberOfInputs - 1))
             if recursive:
                 for i in locals[-1]:
                     fetch1 = optimisedFetch(i)
@@ -504,7 +509,7 @@ def generateURCL(tokens_: list, tokenMap: list, allVariables: list, allFunctions
             output.append(".asmEnd_" + number)
             tokens.pop(tokenNumber); tokens.pop(tokenNumber - 1); tokenNumber = 0
         
-        elif (token[0].isnumeric()) or (token in allVariables) or (token.startswith("%")) or (token == "asm") or (token == "functionVarStart") or (token in definedVariables):
+        elif (token[0].isnumeric()) or (token in [i[0] for i in allVariables]) or (token.startswith("%")) or (token == "asm") or (token == "functionVarStart") or (token in definedVariables):
             tokenNumber += 1
         
         else:
@@ -514,6 +519,12 @@ def generateURCL(tokens_: list, tokenMap: list, allVariables: list, allFunctions
 
 def listOfPotentialFunctions(name: str) -> list:
     temp = [i if i.startswith(name) else "" for i in definedFunctions]
+    for i, j in enumerate(temp):
+        if len(j) >= (len(name) + 1):
+            if j[len(name)] != "_":
+                temp[i] = ""
+        else:
+            temp[i] = ""
     num = 0
     while num < len(temp):
         if temp[num] == "":
@@ -629,6 +640,7 @@ def delVar(name: str) -> None:
             registers[registers.index(name)] = ""
         else:
             heap[heap.index(name)] = ""
+        definedVariables.pop(definedVariables.index(name))
     else:
         raise Exception("FATAL - Tried to delete variable which does not exist: " + name)
 
@@ -745,6 +757,7 @@ def getListOfFunctionInputs() -> list:
         answer.append(i)
         tokens.pop(num)
         tokenNumber -= 1
+        num -= 1
             
 def createArray(name: str, type: str, length: str) -> None:
     if name.endswith("_" + functionScope):

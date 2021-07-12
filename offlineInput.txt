@@ -1,11 +1,7 @@
 $B 8, 8
 
-auto a = 0;
-if (a > 5) {
-    a += 1;
-} else if (a < 5) {
-    a = 69;
-} else {
-    a = 0;
+auto add(auto a, auto b) {
+    return a + b;
 }
+auto a = add(1, 2);
 
