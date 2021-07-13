@@ -396,10 +396,23 @@ def deleteDuplicateLabels(code: list) -> list:
             code.pop(i)
             for k, l in enumerate(code):
                 if not l.startswith("."):
-                    while (l.find(j) != -1) and (j[l.find(j) + 1: l.find(j) + 2] in [i for i in alpha()]):
-                        l = l.replace(j, code[i], 1)
+                    while findInStr(l, j) != -1:
+                        l = l[: findInStr(l, j)] + code[i] + l[findInStr(l, j) + len(j): ]
                 code[k] = l
             return deleteDuplicateLabels(code)
+
+def findInStr(string: str, subString: str) -> int:
+    if string.find(subString) != -1:
+        index = string.find(subString)
+        nextIndex = index + len(subString)
+        if nextIndex >= len(string):
+            return index
+        elif string[nextIndex] == ",":
+            return index
+        else:
+            temp = findInStr(string.replace(subString, "^"*len(subString), 1), subString)
+            return temp
+    return -1
 
 def shortcutBranches(code: list) -> list:
     for i, j in enumerate(code):
