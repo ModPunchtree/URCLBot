@@ -1594,6 +1594,8 @@ def repeatedADDSUB(code: list) -> list:
                         ops = readOps(l[l.find(" ") + 1:])
                         if original in ops:
                             break
+                        elif (original == "SP") and ((l.startswith("PSH")) or (l.startswith("POP"))):
+                            break
                 if len(bad) > 1:
                     if change == 0:
                         for k in bad[:: -1]:

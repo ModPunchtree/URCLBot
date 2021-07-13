@@ -166,7 +166,7 @@ def generateURCL(tokens_: list, tokenMap: list, allVariables: list, allFunctions
                 funcName = temp[-1]
             functionType = getFunctionType(funcName)
             recursive = False
-            if token + "_" + previousFunctionScope() == functionScope: # recursive
+            if (token + "_" + previousFunctionScope() == functionScope) and (funcName != (token + "_" + functionScope)): # recursive
                 recursive = True
             if recursive:
                 locals = [i if i.endswith(functionScope) else "" for i in definedVariables]
