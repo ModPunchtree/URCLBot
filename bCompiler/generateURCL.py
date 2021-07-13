@@ -31,14 +31,14 @@ def generateURCL(tokens_: list, tokenMap: list, allVariables: list, allFunctions
                 createArray(tokens[tokenNumber - 1][1: ], token, tokens[tokenNumber - 2])
                 tokens.pop(tokenNumber); tokens[tokenNumber - 2] = "0"; tokenNumber = 0
         
-        elif token.startswith("£") and (token[1: ] in allFunctions):
+        elif token.startswith("£") and (token[1: ] in [i[0] for i in allFunctions]):
             functionScope = token[1: ] + "_" + functionScope
             output.append("JMP .End_" + functionScope)
             output.append("." + functionScope)
             output.append("INC SP SP")
             tokens[tokenNumber] = "functionVarStart"; tokenNumber = 0
         
-        elif token.startswith("$") and (token[1: ] in allFunctions):
+        elif token.startswith("$") and (token[1: ] in [i[0] for i in allFunctions]):
             squigglyStack.append(functionScope)
             listOfInputs = getListOfFunctionInputs()
             numberOfInputs = len(listOfInputs)

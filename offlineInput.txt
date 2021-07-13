@@ -1,10 +1,9 @@
 $B 8, 8
 
-auto fib(auto x) {
-    if (x < 2) {
-        return x;
+auto add(auto a, auto b, auto c) {
+    auto add(auto a, auto b) {
+        return a + b;
     }
-    return fib(x - 1) + fib(x - 2);
+    return add(a, b) + c;
 }
-auto a = fib(2);
-
+auto a = add(1, 2, 3);
