@@ -1,9 +1,7 @@
-$B 8, 8
+$optimise
+.yourmom
+JMP .yourmom2
+.yourmom2
+.yourmom3
+IMM R3 6
 
-auto add(auto a, auto b, auto c) {
-    auto add(auto a, auto b) {
-        return a + b;
-    }
-    return add(a, b) + c;
-}
-auto a = add(1, 2, 3);

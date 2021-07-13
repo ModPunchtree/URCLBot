@@ -395,8 +395,9 @@ def deleteDuplicateLabels(code: list) -> list:
         if j.startswith(".") and code[i + 1].startswith("."):
             code.pop(i)
             for k, l in enumerate(code):
-                while (l.find(j) != -1) and (j[l.find(j) + 1: l.find(j) + 2] in [i for i in alpha()]):
-                    l = l.replace(j, code[i], 1)
+                if not l.startswith("."):
+                    while (l.find(j) != -1) and (j[l.find(j) + 1: l.find(j) + 2] in [i for i in alpha()]):
+                        l = l.replace(j, code[i], 1)
                 code[k] = l
             return deleteDuplicateLabels(code)
 
