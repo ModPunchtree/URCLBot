@@ -138,7 +138,7 @@ async def on_message(message):
         else:
             BITS = 8
         await message.channel.send("Optimising...")
-        if message.content[message.content.index("\n"): ].count(",") != -1:
+        if message.content[message.content.index("\n"): ].find(",") != -1:
             await message.channel.send("FATAL - Commas are not allowed, use spaces instead")
             return
         try:
