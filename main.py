@@ -110,6 +110,9 @@ async def on_message(message):
         while text.find("  ") != -1:
             text = text.replace("  ", " ")
         text = text.split("\n")
+        if text.find(",") != -1:
+            await message.channel.send("FATAL - Commas are not allowed, use spaces instead")
+            return
         for i, j in enumerate(text):
             if (j.find(",") == -1) and (j.find("=") == -1):
                 text[i] = (j.replace(" ", ", ")).replace(", ", " ", 1)
@@ -135,6 +138,9 @@ async def on_message(message):
         else:
             BITS = 8
         await message.channel.send("Optimising...")
+        if message.content[message.content.index("\n"): ].count(",") != -1:
+            await message.channel.send("FATAL - Commas are not allowed, use spaces instead")
+            return
         try:
             text = "\n".join(genericURCLoptimiser(message.content, BITS))
         except Exception as x:
