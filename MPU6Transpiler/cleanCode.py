@@ -49,7 +49,7 @@ def cleanCode(code: tuple) -> list:
         if urclCode[line].find("SP") != -1:
             urclCode[line] = urclCode[line].replace("SP", "R10")
     
-        if urclCode[line].startswith(("BITS", "MINREG", "MINRAM", "RUN ROM", "RUN RAM")):
+        if urclCode[line].startswith(("BITS", "MINREG", "MINHEAP", "RUN ROM", "RUN RAM")):
             urclCode[line] = ""
     
         if not(urclCode[line]):

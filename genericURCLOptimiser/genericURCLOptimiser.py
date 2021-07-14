@@ -1805,7 +1805,7 @@ def findMINREG(code: list) -> int:
 
 def deleteHeaders(code: list) -> list:
     for i, j in enumerate(code):
-        if j.startswith(("BITS", "MINREG", "MINRAM", "MINSTACK", "RUN")):
+        if j.startswith(("BITS", "MINREG", "MINHEAP", "MINSTACK", "RUN")):
             code.pop(i)
             return deleteHeaders(code)
     return code

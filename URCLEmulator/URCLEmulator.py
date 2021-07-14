@@ -12,7 +12,7 @@ def emulate(raw: str, connection: bool = False, outputs: bool = True) -> str:
     # headers
     # 1 find word length header, else assume 8 bits
     # 2 find MINREG, else calculate it #########################################################
-    # 3 find MINRAM, MINSTACK delete it
+    # 3 find MINHEAP, MINSTACK delete it
     # 4 find IMPORT, return error
     
     # setup
@@ -74,10 +74,10 @@ def emulate(raw: str, connection: bool = False, outputs: bool = True) -> str:
     elif MINREG > 65536:
         raise Exception("FATAL - MINREG cannot be more than 65536")
     
-    # 3 find MINRAM, MINSTACK delete it
-    MINRAM = findMINRAMHeader()
-    if MINRAM > 2 ** BITS:
-        raise Exception("FATAL - MINRAM cannot be more than " + str(2 ** BITS))
+    # 3 find MINHEAP, MINSTACK delete it
+    MINHEAP = findMINHEAPHeader()
+    if MINHEAP > 2 ** BITS:
+        raise Exception("FATAL - MINHEAP cannot be more than " + str(2 ** BITS))
     MINSTACK = findMINSTACKHeader()
     if MINSTACK > 2 ** BITS:
         raise Exception("FATAL - MINSTACK cannot be more than " + str(2 ** BITS))
@@ -105,7 +105,7 @@ def emulate(raw: str, connection: bool = False, outputs: bool = True) -> str:
     registers[0] = 0
     uninitialisedReg[0] = False
     global memory
-    memory = [2 ** BITS - 1 for i in range(min(MINRAM + MINSTACK + len(code), 2 ** BITS))]
+    memory = [2 ** BITS - 1 for i in range(min(MINHEAP + MINSTACK + len(code), 2 ** BITS))]
     global SP; SP = len(memory)
     
     # 4 replace relatives with literals
@@ -254,17 +254,17 @@ def findMINREGHeader() -> int:
             return temp
     return 8
 
-def findMINRAMHeader() -> int:
+def findMINHEAPHeader() -> int:
     if BITS > 16:
-        MINRAM = 2 ** 16
+        MINHEAP = 2 ** 16
     else:
-        MINRAM = 2 ** BITS
+        MINHEAP = 2 ** BITS
     for i in range(len(code)):
-        if code[i].startswith("MINRAM"):
-            MINRAM = int(code[i][6:], 0)
+        if code[i].startswith("MINHEAP"):
+            MINHEAP = int(code[i][6:], 0)
             code.pop(i)
-            return MINRAM
-    return MINRAM
+            return MINHEAP
+    return MINHEAP
 
 def findMINSTACKHeader() -> int:
     MINSTACK = 8
