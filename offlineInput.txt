@@ -1,10 +1,4 @@
+$B 8, 8
 
-ADD R1, R2, R3
-INC R1, R1
-INC R3, R1
-INC R2, R1
-ADD R1, R2, R3
-INC R1, R1
-INC R3, R1
-INC R2, R1
-HLT
+auto a;
+
