@@ -142,10 +142,10 @@ async def on_message(message):
         text = text.upper()
         while text.find("  ") != -1:
             text = text.replace("  ", " ")
-        text = text.split("\n")
         if text.find(",") != -1:
             await message.channel.send("FATAL - Commas are not allowed, use spaces instead")
             return
+        text = text.split("\n")
         for i, j in enumerate(text):
             if (j.find(",") == -1) and (j.find("=") == -1):
                 text[i] = (j.replace(" ", ", ")).replace(", ", " ", 1)
