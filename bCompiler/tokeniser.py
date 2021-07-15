@@ -39,7 +39,7 @@ def tokenise(code: str) -> tuple:
             number, num = readNum(code, num)
             tokens.append(number)
             
-        elif char.isalpha() or char == "_":
+        elif char.isalpha() or char in ("_", "%"):
             # identifier
             tokenMap.append(num)
             identifier, num = readIdentifier(code, num)
@@ -61,7 +61,7 @@ def readNum(code: str, num: int) -> str:
 def readIdentifier(code: str, num: int) -> str:
     answer = ""
     while num < len(code):
-        if code[num].isalpha() or code[num] == "_" or code[num].isnumeric():
+        if code[num].isalpha() or code[num] in ("_", "%") or code[num].isnumeric():
             answer += code[num]
             num += 1
         else:

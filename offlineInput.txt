@@ -1,10 +1,72 @@
 $B 8, 8
 
-auto fib(auto x) {
-    if (x < 2) {
-        return x;
-    }
-    return fib(x - 1) + fib(x - 2);
-}
-auto a = fib(3);
+auto bresenham(auto x1, auto y1, auto x2, auto y2) {
 
+    auto dx = x2 - x1;
+    if (dx > 128) {
+        dx = 0 - dx;
+    }
+    auto dy = y2 - y1;
+    if (dy > 128) {
+        dy = 0 - dy;
+    }
+
+    auto p;
+    auto swapXY = 0;
+    if (dy > dx) {
+        p = x1;
+        x1 = y1;
+        y1 = p;
+        p = x2;
+        x2 = y2;
+        y2 = p;
+        p = dx;
+        dx = dy;
+        dy = p;
+        swapXY = 1;
+    }
+
+    if (x2 > x1) {
+        p = x1;
+        x1 = x2;
+        x2 = p;
+        p = y1;
+        y1 = y2;
+        y2 = p;
+    }
+
+    auto direction = 1;
+    if (y2 < y1) {
+        direction = 255;
+    }
+
+    dy <<= 1;
+    p = dy - dx;
+    dx <<= 1;
+    while (x1 <= x2) {
+        if (swapXY == 1) {
+            asm {
+                OUT %X, y1;
+                OUT %Y, x1;
+                OUT PIXEL, PRINT;
+            }
+        } else {
+            asm {
+                OUT %X, x1;
+                OUT %Y, y1;
+                OUT PIXEL, PRINT;
+            }
+        }
+        x1 += 1;
+        if (p > 128) {
+            p += dy;
+        } else {
+            p += dy - dx;
+            y1 += direction;
+        }
+    }
+    asm {
+        HLT;
+    }
+}
+bresenham(1, 6, 3, 1);

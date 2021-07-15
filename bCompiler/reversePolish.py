@@ -83,8 +83,9 @@ def reversePolish(variables: list, arrays: list, functions: list, tokens: list, 
         elif token in ("while", "if", "elseif", "else", "asm", "return", "delete"):
             output.append(token)
             tokenMapOutput.append(location)
-            operator.append("$" + token)
-            tokenMapOperator.append(location)
+            if token != "else":
+                operator.append("$" + token)
+                tokenMapOperator.append(location)
         else:
             print("WARNING - Unrecognised Token in for Polish: " + token)
 

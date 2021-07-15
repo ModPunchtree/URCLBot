@@ -30,7 +30,6 @@ def preprocess(tokens: list, tokenMap: list, code: str, BITS: int) -> tuple:
                         temp.append(temp2)
                     tokens = tokens[: i + 1] + [temp] + tokens[i + 2 + k + 1: ]
                     tokenMap = tokenMap[: i + 2] + tokenMap[i + 2 + k + 1: ]
-                    i = -1
                     break
                 elif l == ";":
                     temp.append(temp2)

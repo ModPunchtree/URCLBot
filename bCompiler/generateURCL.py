@@ -129,7 +129,7 @@ def generateURCL(tokens_: list, tokenMap: list, allVariables: list, allFunctions
                 output.append(".elseStart_" + number)
                 output.append(".elseEnd_" + lastIf())
                 popAllConditionsOffSquigglyStack()
-                tokens.pop(tokenNumber + 1); tokens.pop(tokenNumber); tokenNumber = 0
+                tokens.pop(tokenNumber); tokenNumber = 0
             elif type(squigglyStack[-1]) == str: # end of function definition
                 output.append("INC SP SP")
                 output.append("STR SP 0")
@@ -153,6 +153,7 @@ def generateURCL(tokens_: list, tokenMap: list, allVariables: list, allFunctions
                 delVar(tokens[tokenNumber - 1])
             output.append("BNZ .whileBody_" + number + " " + fetch1)
             output.append(".whileEnd_" + number)
+            squigglyStack.pop()
             tokens.pop(tokenNumber); tokens.pop(tokenNumber - 1); tokenNumber = 0
         
         elif listOfPotentialFunctions(token):
@@ -593,6 +594,7 @@ def optimisedFetch(name: str) -> str:
 
             location = "M" + str(heap.index(name))
             output.append("LOD " + targetLocation + " " + location)
+            registers[int(targetLocation[1:]) - 1] = name
     else:
         raise Exception("FATAL - Tried to fetch variable that doesn't exist: " + name)
     
