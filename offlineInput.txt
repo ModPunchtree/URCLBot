@@ -1,9 +1,8 @@
 $optimize
-JMP .yourmom
-.yourmom
-.yourmom2
-JMP .yourmom4
-.yourmom3
-IMM R3 6
-.yourmom4
-IMM R4 7
+
+ADD R1, SP, R3
+INC R1, R1
+ADD R1, SP, R3
+INC R1, R1
+HLT
+

@@ -239,6 +239,56 @@ def optimise(code: list, BITS: int) -> list:
     else:
         code = returnedCode
 
+    # extract functions
+    oldCode = [i for i in code]
+    returnedCode = extractFunctions(code)
+    if oldCode != returnedCode:
+        return returnedCode
+    else:
+        code = returnedCode
+
+    return code
+
+def extractFunctions(code: list) -> list:
+    length = len(code) // 2
+    while length > 2:
+        i = 0
+        while i < len(code) - length:
+            j = code[i]
+            section = code[i: i + length]
+            bad = False
+            for x in section:
+                if (x.startswith((".", "BGE", "BRL", "BRG", "BRE", "BNE", "BOD", "BEV", "BLE", "BRZ", "BNZ", "BRP", "BRN", "JMP", "PSH", "POP", "CAL", "RET"))) or (x.find(" SP") != -1):
+                    bad = True
+            if not bad:
+                locations = []
+                k = 0
+                while k < len(code) - length:
+                    l = code[k]
+                    if (i + length - 1 < k) or (k + length - 1 < i):
+                        match = True
+                        for x, y in enumerate(section):
+                            if code[k + x] != y:
+                                match = False
+                                break
+                        if match:
+                            locations.append(k)
+                    k += 1
+                if locations:
+                    label = ".extractedFunction" + uniqueNumber()
+                    locations.insert(0, i)
+                    while len(locations) > 0:
+                        x = locations[0]
+                        code = code[: x] + ["CAL " + label] + code[x + length: ]
+                        locations.pop(0)
+                        locations = [w - length + 1 for w in locations]
+                    code.append(label)
+                    for h in section:
+                        code.append(h)
+                    code.append("RET")
+                    return code
+            i += 1
+        length -= 1
     return code
 
 def optimiseJMPBranch(code: list) -> list:
@@ -1746,49 +1796,32 @@ def unreachableCode(code: list) -> list:
 
 def optimiseWriteBeforeRead(code: list) -> list:
     # find code that writes to reg
-    # check next instructions if not label or branch
-    # if reg is read or untouched leave it
+    # check previous instructions if not label or branch
+    # if reg is read without being overwritten then ignore
     # else if reg is overwritten delete original instruction
-    
-    for i, j in enumerate(code[:-1]):
-        if not j.startswith(".") and not j.startswith(("STR", "JMP", "BGE", "NOP", "BRL", "BRG", "BRE", "BNE", "BOD", "BEV", "BLE", "BRZ", "BNZ", "BRN", "BRP", "OUT", "PSH", "CAL", "RET", "HLT")):
-            op = readOperation(j)
-            ops = readOps(j[len(op) + 1: ])
-            nextInstructions = []
-            for k in code[i + 1:]:
-                if k.startswith(".") or k.startswith(("JMP", "BGE", "BRL", "BRG", "BRE", "BNE", "BOD", "BEV", "BLE", "BRZ", "BNZ", "BRN", "BRP", "CAL", "RET", "HLT")):
-                    break
-                nextInstructions.append(k)
-            useful = False
-            overwritten = False
-            if ops.count(ops[0]) > 1:
-                useful = True
-            for k in nextInstructions:
-                op2 = readOperation(k)
-                ops2 = readOps(k[len(op2) + 1: ])
-                # read ops
-                if op2 not in ("NOP", "IMM", "POP", "RET", "HLT"):
-                    if len(ops2) == 1:
-                        if ops2[0] == ops[0]:
-                            useful = True
-                    elif len(ops2) == 2:
-                        if ops2[1] == ops[0]:
-                            useful = True
-                    elif len(ops2) == 3:
-                        if ops2[1] == ops[0]:
-                            useful = True
-                        elif ops2[2] == ops[0]:
-                            useful = True
-                # write ops
-                if op2 not in ("JMP", "BGE", "BRL", "BRG", "BRE", "BNE", "BOD", "BEV", "BLE", "BRZ", "BNZ", "BRN", "BRP", "CAL", "RET", "HLT"):
-                    if ops2[0] == ops[0]:
-                        overwritten = True
-                if not useful and overwritten:
-                    code.pop(i)
-                    return optimiseWriteBeforeRead(code)
-            if not useful and overwritten:
-                code.pop(i)
-                return optimiseWriteBeforeRead(code)
+
+    for i, j in enumerate(code):
+        op2 = readOperation(j)
+        ops2 = readOps(j[len(op2) + 1: ])
+        if op2 not in ("JMP", "BGE", "BRL", "BRG", "BRE", "BNE", "BOD", "BEV", "BLE", "BRZ", "BNZ", "BRN", "BRP", "CAL", "RET", "HLT"):
+            if (ops2[0] not in ops2[1: ]) and (ops2[0] != "SP"):
+                beforeInstructions = []
+                for k in code[: i][: : -1]:
+                    if k.startswith((".", "JMP", "BGE", "BRL", "BRG", "BRE", "BNE", "BOD", "BEV", "BLE", "BRZ", "BNZ", "BRN", "BRP", "CAL", "RET", "HLT")):
+                        break
+                    beforeInstructions.append(k)
+                for k, l in enumerate(beforeInstructions):
+                    op = readOperation(l)
+                    ops = readOps(l[len(op) + 1: ])
+                    if op not in ("JMP", "BGE", "BRL", "BRG", "BRE", "BNE", "BOD", "BEV", "BLE", "BRZ", "BNZ", "BRN", "BRP", "CAL", "RET", "HLT", "NOP"):
+                        if op in ("LOD", "STR"):
+                            if ops[0] in ops:
+                                break
+                        elif (ops2[0] in ops[1: ]) and (ops2[0] != ops[0]):
+                            break
+                        elif ops2[0] == ops[0]:
+                            code.pop(i - 1 - k)
+                            return code
     return code
 
 def findMINREG(code: list) -> int:
