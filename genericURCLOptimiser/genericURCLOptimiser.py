@@ -264,7 +264,6 @@ def extractFunctions(code: list) -> list:
                 locations = []
                 k = 0
                 while k < len(code) - length:
-                    l = code[k]
                     if (i + length - 1 < k) or (k + length - 1 < i):
                         match = True
                         for x, y in enumerate(section):
@@ -274,7 +273,7 @@ def extractFunctions(code: list) -> list:
                         if match:
                             locations.append(k)
                     k += 1
-                if locations:
+                if (len(locations) > 1) or ((len(locations) == 1) and (length > 3)):
                     label = ".extractedFunction" + uniqueNumber()
                     locations.insert(0, i)
                     while len(locations) > 0:
