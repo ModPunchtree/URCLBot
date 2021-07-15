@@ -1803,7 +1803,9 @@ def optimiseWriteBeforeRead(code: list) -> list:
     for i, j in enumerate(code):
         op2 = readOperation(j)
         ops2 = readOps(j[len(op2) + 1: ])
-        if op2 not in ("JMP", "BGE", "BRL", "BRG", "BRE", "BNE", "BOD", "BEV", "BLE", "BRZ", "BNZ", "BRN", "BRP", "CAL", "RET", "HLT"):
+        if (op2 in ("HLT", "RET", "NOP")) or (op2.startswith(".")):
+            pass
+        elif op2 not in ("JMP", "BGE", "BRL", "BRG", "BRE", "BNE", "BOD", "BEV", "BLE", "BRZ", "BNZ", "BRN", "BRP", "CAL", "RET", "HLT"):
             if (ops2[0] not in ops2[1: ]) and (ops2[0] != "SP"):
                 beforeInstructions = []
                 for k in code[: i][: : -1]:

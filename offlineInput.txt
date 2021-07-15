@@ -1,8 +1,10 @@
 $optimize
 
-ADD R1, SP, R3
+ADD R1, R2, R3
 INC R1, R1
-ADD R1, SP, R3
+INC R3, R1
+ADD R1, R2, R3
 INC R1, R1
+INC R3, R1
 HLT
 
