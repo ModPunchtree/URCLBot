@@ -1,4 +1,10 @@
 $B 8, 8
 
-auto a;
+auto fib(auto x) {
+    if (x < 2) {
+        return x;
+    }
+    return fib(x - 1) + fib(x - 2);
+}
+auto a = fib(3);
 

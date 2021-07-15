@@ -37,9 +37,6 @@ def bCompiler(raw: str) -> str:
     if len(variables) == 1:
         if type(variables[0]) == list:
             variables = variables[0]
-    if len(functions) == 1:
-        if type(functions[0]) == list:
-            functions = functions[0]
     if len(arrays) == 1:
         if type(arrays[0]) == list:
             arrays = arrays[0]
