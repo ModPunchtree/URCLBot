@@ -151,7 +151,7 @@ async def on_message(message):
                 text[i] = (j.replace(" ", ", ")).replace(", ", " ", 1)
         text = "\n".join(text)
         try:
-            text = "\n".join(genericURCLoptimiser(message.content, BITS))
+            text = "\n".join(genericURCLoptimiser(text, BITS))
         except Exception as x:
             await message.channel.send("ERROR: \n" + str(x))
             return
