@@ -58,6 +58,8 @@ async def on_message(message):
             await message.channel.send("FATAL - at least 2 options are required as well as a description")
             return
         
+        options.append("other (post in #urcl-concerns)")
+        
         if len(options) > 26:
             await message.channel.send("FATAL - Too many options, there should be less than 27 options")
             return
