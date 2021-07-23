@@ -89,8 +89,7 @@ async def on_message(message):
         
         try:
             pollMessage = await channel.fetch_message(pollMessage.id)
-        except Exception():
-            channel.send("FATAL - Failed to find poll (poll was deleted ???)")
+        except:
             return
         
         resultsText = "This poll has now finished, the results are:"
