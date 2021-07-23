@@ -67,7 +67,7 @@ async def on_message(message):
         await message.delete()
 
         reactions = []
-        finalText = "@here " + pollDescription + "\n"
+        finalText = "@here " + pollDescription
         letters = "abcdefghijklmnopqrstuvwxyz"
         for index, option in enumerate(options):
             letter = letters[index]
