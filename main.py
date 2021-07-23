@@ -36,6 +36,76 @@ async def on_message(message):
         await message.channel.send(":woman_shrugging:")
         return
 
+    elif str(message.channel) == "urcl-polls" and message.content.startswith("$poll"):
+        
+        channel = message.channel
+        pollDescription = ""
+        options = []
+        text = message.content[6:]
+        while text.find("```") != -1:
+            text = text[text.find("```") + 4: ]
+            subText = text[: text.find("```")]
+            text = text[text.find("```") + 3: ]
+            if not subText:
+                await message.channel.send("FATAL - blank block found in message")
+                return
+            if not pollDescription:
+                pollDescription = subText
+            else:
+                options.append(subText)
+
+        if (len(options) <= 1) or (not pollDescription):
+            await message.channel.send("FATAL - at least 2 options are required as well as a description")
+            return
+        
+        if len(options) > 26:
+            await message.channel.send("FATAL - Too many options, there should be less than 27 options")
+            return
+
+        reactions = []
+        finalText = "@here " + pollDescription + "\n"
+        letters = "abcdefghijklmnopqrstuvwxyz"
+        for index, option in enumerate(options):
+            letter = letters[index]
+            reactions.append(letter)
+            finalText += "\n" + letter.upper() + ") " + option
+        
+        finalText += "\nPlease vote only once (that includes alt accounts). This poll ends 24 hours after it has been first posted."
+
+        if len(finalText) > 2000:
+            await message.channel.send("FATAL - Poll text is too long to be posted")            
+            return
+        
+        pollMessage = await channel.send(finalText)
+        translations = ["\U0001F1E6", "\U0001F1E7", "\U0001F1E8", "\U0001F1E9", "\U0001F1EA", "\U0001F1EB", "\U0001F1EC", "\U0001F1ED", "\U0001F1EE", "\U0001F1EF", "\U0001F1F0", "\U0001F1F1", "\U0001F1F2", "\U0001F1F3", "\U0001F1F4", "\U0001F1F5", "\U0001F1F6", "\U0001F1F7", "\U0001F1F8", "\U0001F1F9", "\U0001F1FA", "\U0001F1FB", "\U0001F1FC", "\U0001F1FD", "\U0001F1FE", "\U0001F1FF"]
+        for i in range(len(reactions)):
+            await pollMessage.add_reaction(translations[i])
+
+        await asyncio.sleep(24 * 3600)
+        
+        try:
+            pollMessage = await channel.fetch_message(pollMessage.id)
+        except Exception():
+            message.channel.send("FATAL - Failed to find poll (poll was deleted ???)")
+            return
+        
+        resultsText = "This poll has now finished, the results are:"
+        count69 = []
+        for i in reactions:
+            count69.append(0)
+        for reaction in pollMessage.reactions:
+            if str(reaction) in translations:
+                count69[translations.index(str(reaction))] = reaction.count - 1
+                resultsText += "\n" + str(reactions[translations.index(str(reaction))]).upper() + " - " + str(reaction.count - 1)
+        winner = count69.index(max(count69))
+        if count69.count(max(count69)) > 1:
+            resultsText += "\n\nThis poll ended in a tie"
+        else:
+            resultsText += "\n\nThe winner is: Option " + reactions[count69.index(max(count69))].upper()
+        await pollMessage.reply(resultsText)
+
+        return
+
     elif str(message.channel) != "urcl-bot":
         return
 
