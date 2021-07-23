@@ -64,6 +64,8 @@ async def on_message(message):
             await message.channel.send("FATAL - Too many options, there should be less than 27 options")
             return
 
+        await message.delete()
+
         reactions = []
         finalText = "@here " + pollDescription + "\n"
         letters = "abcdefghijklmnopqrstuvwxyz"
@@ -88,7 +90,7 @@ async def on_message(message):
         try:
             pollMessage = await channel.fetch_message(pollMessage.id)
         except Exception():
-            message.channel.send("FATAL - Failed to find poll (poll was deleted ???)")
+            channel.send("FATAL - Failed to find poll (poll was deleted ???)")
             return
         
         resultsText = "This poll has now finished, the results are:"
