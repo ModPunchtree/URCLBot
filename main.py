@@ -72,7 +72,7 @@ async def on_message(message):
             reactions.append(letter)
             finalText += "\n" + letter.upper() + ") " + option
         
-        finalText += "\nPlease vote only once (that includes alt accounts). This poll ends 24 hours after it has been first posted."
+        finalText += "\n\nPlease vote only once (that includes alt accounts). This poll ends 24 hours after it has been first posted."
 
         if len(finalText) > 2000:
             await message.channel.send("FATAL - Poll text is too long to be posted")            
