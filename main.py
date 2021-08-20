@@ -143,7 +143,7 @@ async def on_message(message):
                 answer += "||:eight:||"
             else:
                 raise Exception("FATAL - Unrecognised symbol in minesweeper: " + j)
-        await message.channel.send(answer + ".\nThe corners are safe!\nThere are 20 mines total.")
+        await message.channel.send(answer + "||:zero:||\nThe corners are safe!\nThere are 20 mines total.")
         return
 
     elif message.content.startswith("$help"):
