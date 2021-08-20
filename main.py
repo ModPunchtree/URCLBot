@@ -1,5 +1,6 @@
 # main file for repl.it 
 
+from minesweeper.minesweeper import minesweeper
 from genericURCLOptimiser.genericURCLOptimiser import genericURCLoptimiser
 from URCLEmulator.URCLEmulator import emulate
 import discord
@@ -110,6 +111,39 @@ async def on_message(message):
         return
 
     elif str(message.channel) != "urcl-bot":
+        return
+
+    elif message.content.startswith("$minesweeper"):
+        width = 10
+        height = 10
+        text = minesweeper(width, height, 20)
+        answer = ""
+        for i, j in enumerate(text):
+            if i % height == 0:
+                answer += "\n"
+            if j == -1:
+                answer += "||\U0001F4A3||"
+            elif j == 0:
+                answer += "||\N{DIGIT ZERO}||"
+            elif j == 1:
+                answer += "||\N{DIGIT ONE}||"
+            elif j == 2:
+                answer += "||\N{DIGIT TWO}||"
+            elif j == 3:
+                answer += "||\N{DIGIT THREE}||"
+            elif j == 4:
+                answer += "||\N{DIGIT FOUR}||"
+            elif j == 5:
+                answer += "||\N{DIGIT FIVE}||"
+            elif j == 6:
+                answer += "||\N{DIGIT SIX}||"
+            elif j == 7:
+                answer += "||\N{DIGIT SEVEN}||"
+            elif j == 8:
+                answer += "||\N{DIGIT EIGHT}||"
+            else:
+                raise Exception("FATAL - Unrecognised symbol in minesweeper: " + j)
+        await message.channel.send(answer)
         return
 
     elif message.content.startswith("$help"):
