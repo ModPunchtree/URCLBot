@@ -124,23 +124,23 @@ async def on_message(message):
             if j == -1:
                 answer += "||\U0001F4A3||"
             elif j == 0:
-                answer += "||\N{DIGIT ZERO}||"
+                answer += "||:zero:||"
             elif j == 1:
-                answer += "||\N{DIGIT ONE}||"
+                answer += "||:one:||"
             elif j == 2:
-                answer += "||\N{DIGIT TWO}||"
+                answer += "||:two:||"
             elif j == 3:
-                answer += "||\N{DIGIT THREE}||"
+                answer += "||:three:||"
             elif j == 4:
-                answer += "||\N{DIGIT FOUR}||"
+                answer += "||:four:||"
             elif j == 5:
-                answer += "||\N{DIGIT FIVE}||"
+                answer += "||:five:||"
             elif j == 6:
-                answer += "||\N{DIGIT SIX}||"
+                answer += "||:six:||"
             elif j == 7:
-                answer += "||\N{DIGIT SEVEN}||"
+                answer += "||:seven:||"
             elif j == 8:
-                answer += "||\N{DIGIT EIGHT}||"
+                answer += "||:eight:||"
             else:
                 raise Exception("FATAL - Unrecognised symbol in minesweeper: " + j)
         await message.channel.send(answer)
